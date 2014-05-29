@@ -30,7 +30,7 @@ function onPlayerJoin( pPlayer )
 {
 	playerList.rawset( pPlayer.Name, pPlayer.ID );
 	
-	SetAdminLevel( pPlayer, 1 );	// uncomment this for tests, it grants panel access for everyone
+	//SetAdminLevel( pPlayer, 1 );	// uncomment this for tests, it grants panel access for everyone
 	
 	return 1;
 }
