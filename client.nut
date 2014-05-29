@@ -1,10 +1,10 @@
 /* ############################################################## */
-/* #			Admin Panel v1.0 by Stoku						# */
+/* #			Admin Panel v1.1 by Stoku						# */
 /* #					Have fun!								# */
 /* ############################################################## */
 
 /* Author and versioning info */
-local SCRIPT_VERSION			= "1.0";
+local SCRIPT_VERSION			= "1.1";
 local SCRIPT_AUTHOR				= "Stoku";
 local LANGUAGE_NAME				= "english";
 local LANGUAGE_AUTHOR			= "Stoku";
@@ -12,7 +12,7 @@ local LANGUAGE_AUTHOR			= "Stoku";
 /* Basic settings */
 local CONSOLE_PREFIX			= "[AdminPanel]";	// Console prefix
 local BIND_KEY					= 'P';				// Keybind to access panel
-local iAdminLevel				= 0;				// Don't change it
+local iAdminLevel				= 0;				// Admin level variable, set it with SetAdminLevel from server.nut
 local SOUND_ENABLED				= true;				// Enable/disable admin panel sounds
 
 /* Admin access configuration */
@@ -20,13 +20,14 @@ local PANEL_ACCESS				= 1;				// Admin panel access level
 local TIME_WEATHER_ACCESS 		= 1;				// Access to Time & Weather settings
 local PLAYER_MANAGER_ACCESS 	= 1;				// Player Manager
 local GAME_ACCESS				= 1;				// Game settings
-local MISC_ACCESS				= 2;				// Misc settings, for future use
+local SERVER_ACCESS				= 1;				// Server settings
 // Time & Weather
 local TIME_WEATHER_TLOCK		= 1;				// Time lock
 local TIME_WEATHER_WLOCK		= 1;				// Weather lock
 local TIME_WEATHER_TIME			= 1;				// Set time
 local TIME_WEATHER_WEATHER		= 1;				// Set weather
 // Player Manager
+local PLAYER_MANAGER_BAN		= 1;				// Ban player
 local PLAYER_MANAGER_KICK		= 1;				// Kick player
 local PLAYER_MANAGER_KILL		= 1;				// Kill player
 local PLAYER_MANAGER_FREEZE		= 1;				// Freeze/unfreeze
@@ -34,7 +35,17 @@ local PLAYER_MANAGER_HEAL		= 1;				// Heal player
 local PLAYER_CONSOLE_MODE1		= 1;				// Private message
 local PLAYER_CONSOLE_MODE2		= 1;				// Set health
 local PLAYER_CONSOLE_MODE3		= 1;				// Set Armor
-local PLAYER_CONSOLE_MODE4		= 1;				// SetSkin
+local PLAYER_CONSOLE_MODE4		= 1;				// Set Skin
+local PLAYER_CONSOLE_MODE5		= 1;				// Ban IP
+local PLAYER_CONSOLE_MODE6		= 1;				// Unban IP
+// Server settings
+local SERVER_SETTINGS_SNAME		= 1;				// Server name setting
+local SERVER_SETTINGS_MNAME		= 1;				// Map name
+local SERVER_SETTINGS_GNAME		= 1; 				// Gamemode name
+local SERVER_SETTINGS_MPLAYERS	= 1;				// Max players
+local SERVER_SETTINGS_PASSWORD	= 1;				// Server password
+local SERVER_SETTINGS_PORT		= 1;				// Server port
+
 // Game settings
 local GAME_SETTINGS_SPEED		= 1;				// Set game speed
 local GAME_SETTINGS_GRAVITY		= 1;				// Set game gravity
@@ -98,7 +109,7 @@ local twButton0 = [ 5, titleWindow[3] - 60, 190, 25, "Exit" ];										// X pos
 local twButton1 = [ 5, 5, 190, 25, "Time & Weather" ];												// X pos, Y pos, X Size, Y Size, Text
 local twButton2 = [ 5, 35, 190, 25, "Player Manager" ];												// X pos, Y pos, X Size, Y Size, Text
 local twButton3 = [ 5, 65, 100, 25, "Vehicle Manager" ];											// X pos, Y pos, X Size, Y Size, Text
-local twButton4 = [ 5, 95, 190, 25, "Misc" ];														// X pos, Y pos, X Size, Y Size, Text
+local twButton4 = [ 5, 95, 190, 25, "Server Settings" ];											// X pos, Y pos, X Size, Y Size, Text
 local twButton5 = [ 5, 125, 190, 25, "Game Settings" ];												// X pos, Y pos, X Size, Y Size, Text
 
 local timeweatherWindow = [ 200, ScreenHeight - 310, 400, 300, "Time & Weather Settings" ];			// X pos, Y pos, X Size, Y Size, Text
@@ -120,20 +131,37 @@ local playermanagerWindow = [ 200, ScreenHeight - 310, 400, 300, "Player Manager
 local playermanagerButton1 = [ 5, 5, 25, 25, "<" ];													// X pos, Y pos, X Size, Y Size, Text
 local playermanagerButton2 = [ playermanagerWindow[2]-30, 5, 25, 25, ">" ];							// X pos, Y pos, X Size, Y Size, Text
 local playermanagerButton3 = [ 5, 35, 100, 25, "Kick" ];											// X pos, Y pos, X Size, Y Size, Text
-local playermanagerButton4 = [ 5, 65, 100, 25, "Kill" ];											// X pos, Y pos, X Size, Y Size, Text
-local playermanagerButton5 = [ 5, 95, 100, 25, "Freeze" ];											// X pos, Y pos, X Size, Y Size, Text
-local playermanagerButton6 = [ 5, 125, 100, 25, "Heal" ];											// X pos, Y pos, X Size, Y Size, Text
+local playermanagerButton4 = [ 5, 95, 100, 25, "Kill" ];											// X pos, Y pos, X Size, Y Size, Text
+local playermanagerButton5 = [ 5, 125, 100, 25, "Freeze" ];											// X pos, Y pos, X Size, Y Size, Text
+local playermanagerButton6 = [ 5, 155, 100, 25, "Heal" ];											// X pos, Y pos, X Size, Y Size, Text
 local playermanagerButton7 = [ 5, playermanagerWindow[3] - 60, 390, 25, "Cancel" ];					// X pos, Y pos, X Size, Y Size, Text
+local playermanagerButton8 = [ 5, 65, 100, 25, "Ban" ];												// X pos, Y pos, X Size, Y Size, Text
 local playermanagerLabel1 = [ playermanagerWindow[2]/2-70, 8, 100, 25, "Free Slot (0/0)" ];			// X pos, Y pos, X Size, Y Size, Text
 local playermanagerLabel2 = [ 115, 38, 100, 25, "Health: 0" ];										// X pos, Y pos, X Size, Y Size, Text
 local playermanagerLabel3 = [ 115, 68, 100, 25, "Armor: 0" ];										// X pos, Y pos, X Size, Y Size, Text
 local playermanagerLabel4 = [ 110, 95, 100, 25, "Skin: 0" ];										// X pos, Y pos, X Size, Y Size, Text
 local playermanagerLabel5 = [ 110, 125, 100, 25, "Ping: 0ms" ];										// X pos, Y pos, X Size, Y Size, Text
-local playermanagerLabel6 = [ 110, 155, 100, 25, "Vehicle: 0" ];									// X pos, Y pos, X Size, Y Size, Text
-local playermanagerLabel7 = [ 5, playermanagerWindow[3] - 110, 390, 25, "[1/5] Mode: Find player [Press END to change]" ];	// X pos, Y pos, X Size, Y Size, Text
+local playermanagerLabel6 = [ 110, 155, 100, 25, "IP:" ];											// X pos, Y pos, X Size, Y Size, Text
+local playermanagerLabel7 = [ 5, playermanagerWindow[3] - 110, 390, 25, "[1/7] Mode: Find player [Press END to change]" ];	// X pos, Y pos, X Size, Y Size, Text
 local playermanagerEditbox1 = [ 5, playermanagerWindow[3] - 90, 390, 25 ];							// X pos, Y pos, X Size, Y Size
 local playermanagerProgressbar1 = [ 110, 35, 285, 25 ];												// X pos, Y pos, X Size, Y Size
 local playermanagerProgressbar2 = [ 110, 65, 285, 25 ];												// X pos, Y pos, X Size, Y Size
+
+local serversettingsWindow = [ 200, ScreenHeight - 310, 400, 300, "Server Settings" ];				// X pos, Y pos, X Size, Y Size, Text
+local serversettingsLabel1 = [ 5, 5, 100, 25, "Server Name:" ];										// X pos, Y pos, X Size, Y Size, Text
+local serversettingsLabel2 = [ 5, 35, 100, 25, "Map Name:" ];										// X pos, Y pos, X Size, Y Size, Text
+local serversettingsLabel3 = [ 5, 65, 100, 25, "Gamemode Name:" ];									// X pos, Y pos, X Size, Y Size, Text
+local serversettingsLabel4 = [ 5, 95, 100, 25, "Max Players:" ];									// X pos, Y pos, X Size, Y Size, Text
+local serversettingsLabel5 = [ 5, 125, 100, 25, "Password:" ];										// X pos, Y pos, X Size, Y Size, Text
+local serversettingsLabel6 = [ 5, 155, 100, 25, "Port:" ];											// X pos, Y pos, X Size, Y Size, Text
+local serversettingsEditbox1 = [ 150, 5, 240, 25 ];													// X pos, Y pos, X Size, Y Size
+local serversettingsEditbox2 = [ 150, 35, 240, 25 ];												// X pos, Y pos, X Size, Y Size
+local serversettingsEditbox3 = [ 150, 65, 240, 25 ];												// X pos, Y pos, X Size, Y Size
+local serversettingsEditbox4 = [ 150, 95, 50, 25 ];													// X pos, Y pos, X Size, Y Size
+local serversettingsEditbox5 = [ 150, 125, 240, 25 ];												// X pos, Y pos, X Size, Y Size
+local serversettingsEditbox6 = [ 150, 155, 100, 25 ];												// X pos, Y pos, X Size, Y Size
+local serversettingsButton0 = [ serversettingsWindow[3]-100, serversettingsWindow[3] - 60, (serversettingsWindow[2]/2)-10, 25, "Cancel" ];	// X pos, Y pos, X Size, Y Size, Text
+local serversettingsButton1 = [ 5, serversettingsWindow[3] - 60, (serversettingsWindow[2]/2)-10, 25, "Accept" ];							// X pos, Y pos, X Size, Y Size, Text
 
 local gamesettingsWindow = [ 200, ScreenHeight - 310, 400, 300, "Game Settings" ];					// X pos, Y pos, X Size, Y Size, Text
 local gamesettingsLabel1 = [ 5, 5, 100, 25, "Game Speed:" ];										// X pos, Y pos, X Size, Y Size, Text
@@ -150,6 +178,12 @@ local gamesettingsCheckbox3 = [ 140, 130, 10, 10, true ];											// X pos, Y 
 local gamesettingsCheckbox4 = [ 140, 160, 10, 10, true ];											// X pos, Y pos, X Size, Y Size, bChecked
 local gamesettingsButton0 = [ gamesettingsWindow[3]-100, gamesettingsWindow[3] - 60, (gamesettingsWindow[2]/2)-10, 25, "Cancel" ];	// X pos, Y pos, X Size, Y Size, Text
 local gamesettingsButton1 = [ 5, gamesettingsWindow[3] - 60, (gamesettingsWindow[2]/2)-10, 25, "Accept" ];							// X pos, Y pos, X Size, Y Size, Text
+local gamesettingsButton2 = [ 200, 5, 25, 25, "+" ];												// X pos, Y pos, X Size, Y Size, Text
+local gamesettingsButton3 = [ 225, 5, 25, 25, "-" ];												// X pos, Y pos, X Size, Y Size, Text
+local gamesettingsButton4 = [ 200, 35, 25, 25, "+" ];												// X pos, Y pos, X Size, Y Size, Text
+local gamesettingsButton5 = [ 225, 35, 35, 25, "++" ];												// X pos, Y pos, X Size, Y Size, Text
+local gamesettingsButton6 = [ 300, 35, 25, 25, "-" ];												// X pos, Y pos, X Size, Y Size, Text
+local gamesettingsButton7 = [ 265, 35, 35, 25, "--" ];												// X pos, Y pos, X Size, Y Size, Text
 /* --- End of theme --- */
 
 /* Dont touch it! */
@@ -186,6 +220,7 @@ local gPlayerManagerButton4 = null;
 local gPlayerManagerButton5 = null;
 local gPlayerManagerButton6 = null;
 local gPlayerManagerButton7 = null;
+local gPlayerManagerButton8 = null;
 local gPlayerManagerLabel1 = null;
 local gPlayerManagerLabel2 = null;
 local gPlayerManagerLabel3 = null;
@@ -197,7 +232,23 @@ local gPlayerManagerEditbox1 = null;
 local gPlayerManagerProgressbar1 = null;
 local gPlayerManagerProgressbar2 = null;
 
-//local gMiscWindow = null; // for future use
+
+local gServerSettingsWindow = null;
+local gServerSettingsLabel1 = null;
+local gServerSettingsLabel2 = null;
+local gServerSettingsLabel3 = null;
+local gServerSettingsLabel4 = null;
+local gServerSettingsLabel5 = null;
+local gServerSettingsLabel6 = null;
+local gServerSettingsEditbox1 = null;
+local gServerSettingsEditbox2 = null;
+local gServerSettingsEditbox3 = null;
+local gServerSettingsEditbox4 = null;
+local gServerSettingsEditbox5 = null;
+local gServerSettingsEditbox6 = null;
+local gServerSettingsButton0 = null;
+local gServerSettingsButton1 = null;
+
 
 local gGameSettingsWindow = null;
 local gGameSettingsLabel1 = null;
@@ -214,6 +265,12 @@ local gGameSettingsCheckbox3 = null;
 local gGameSettingsCheckbox4 = null;
 local gGameSettingsButton0 = null;
 local gGameSettingsButton1 = null;
+local gGameSettingsButton2 = null;
+local gGameSettingsButton3 = null;
+local gGameSettingsButton4 = null;
+local gGameSettingsButton5 = null;
+local gGameSettingsButton6 = null;
+local gGameSettingsButton7 = null;
 
 local iMaxPlayers = 0;
 local iWeatherID = 0;
@@ -269,7 +326,7 @@ function onScriptLoad()
 	gTitleButton3.Alpha = GUI_ELEMENT_ALPHA;
 	gTitleButton3.Visible = false;
 	
-	/* Misc button */
+	/* Server settings button */
 	gTitleButton4 = GUIButton( VectorScreen( twButton4[0], twButton4[1] ), ScreenSize( twButton4[2], twButton4[3] ), twButton4[4] );
 	if ( GUI_BUTTON_COLOR ) gTitleButton4.Colour = GUI_BUTTON_COLOR;
 	gTitleButton4.FontTags = TAG_BOLD;
@@ -291,7 +348,7 @@ function onScriptLoad()
 	gTitleWindow.AddChild( gTitleButton0 );
 	gTitleWindow.AddChild( gTitleButton1 );
 	gTitleWindow.AddChild( gTitleButton2 );
-	gTitleWindow.AddChild( gTitleButton3 );
+	gTitleWindow.AddChild( gTitleButton3 ); // vehicle manager button, for future use
 	gTitleWindow.AddChild( gTitleButton4 );
 	gTitleWindow.AddChild( gTitleButton5 );
 	
@@ -488,6 +545,16 @@ function onScriptLoad()
 	gPlayerManagerButton7.Alpha = GUI_ELEMENT_ALPHA;
 	gPlayerManagerButton7.Visible = true;
 	
+	/* Ban button */
+	gPlayerManagerButton8 = GUIButton( VectorScreen( playermanagerButton8[0], playermanagerButton8[1] ), ScreenSize( playermanagerButton8[2], playermanagerButton8[3] ), playermanagerButton8[4] );
+	if ( GUI_BUTTON_COLOR ) gPlayerManagerButton8.Colour = GUI_BUTTON_COLOR;
+	gPlayerManagerButton8.FontTags = TAG_BOLD;
+	gPlayerManagerButton8.SetCallbackFunc( Menu3_Handle8 );
+	gPlayerManagerButton8.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gPlayerManagerButton8.Alpha = GUI_ELEMENT_ALPHA;
+	gPlayerManagerButton8.Visible = false;
+
+	
 	/* Nickname label */
 	gPlayerManagerLabel1 = GUILabel( VectorScreen( playermanagerLabel1[0], playermanagerLabel1[1] ), ScreenSize( playermanagerLabel1[2], playermanagerLabel1[3] ), playermanagerLabel1[4] );
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel1.Colour = GUI_WINDOW_COLOR;
@@ -528,7 +595,7 @@ function onScriptLoad()
 	gPlayerManagerLabel5.Alpha = GUI_ELEMENT_ALPHA;
 	gPlayerManagerLabel5.Visible = false;
 	
-	/* Vehicle label */
+	/* IP label */
 	gPlayerManagerLabel6 = GUILabel( VectorScreen( playermanagerLabel6[0], playermanagerLabel6[1] ), ScreenSize( playermanagerLabel6[2], playermanagerLabel6[3] ), playermanagerLabel6[4] );
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel6.Colour = GUI_WINDOW_COLOR;
 	gPlayerManagerLabel6.FontTags = TAG_BOLD;
@@ -570,6 +637,7 @@ function onScriptLoad()
 	gPlayerManagerProgressbar2.Alpha = GUI_ELEMENT_ALPHA;
 	gPlayerManagerProgressbar2.Visible = true;
 	
+	
 	AddGUILayer( gPlayerManagerWindow );
 	gPlayerManagerWindow.AddChild( gPlayerManagerButton1 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerButton2 );
@@ -578,6 +646,7 @@ function onScriptLoad()
 	gPlayerManagerWindow.AddChild( gPlayerManagerButton5 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerButton6 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerButton7 );
+	gPlayerManagerWindow.AddChild( gPlayerManagerButton8 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerLabel1 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerLabel2 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerLabel3 );
@@ -588,6 +657,141 @@ function onScriptLoad()
 	gPlayerManagerWindow.AddChild( gPlayerManagerEditbox1 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerProgressbar1 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerProgressbar2 );
+	
+	
+	// ------------------------------- Server Settings Window
+	gServerSettingsWindow = GUIWindow( VectorScreen( serversettingsWindow[0], serversettingsWindow[1] ), ScreenSize( serversettingsWindow[2], serversettingsWindow[3] ), serversettingsWindow[4] );
+	if ( GUI_WINDOW_COLOR ) gServerSettingsWindow.Colour = GUI_WINDOW_COLOR;
+	gServerSettingsWindow.Titlebar = GUI_TITLE_BAR;
+	gServerSettingsWindow.Alpha = GUI_WINDOW_ALPHA;
+	gServerSettingsWindow.Visible = false;
+	
+	/* Server name label */
+	gServerSettingsLabel1 = GUILabel( VectorScreen( serversettingsLabel1[0], serversettingsLabel1[1] ), ScreenSize( serversettingsLabel1[2], serversettingsLabel1[3] ), serversettingsLabel1[4] );
+	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel1.Colour = GUI_WINDOW_COLOR;
+	gServerSettingsLabel1.FontTags = TAG_BOLD;
+	gServerSettingsLabel1.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsLabel1.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel1.Visible = false;
+	
+	/* Map name label */
+	gServerSettingsLabel2 = GUILabel( VectorScreen( serversettingsLabel2[0], serversettingsLabel2[1] ), ScreenSize( serversettingsLabel2[2], serversettingsLabel2[3] ), serversettingsLabel2[4] );
+	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel2.Colour = GUI_WINDOW_COLOR;
+	gServerSettingsLabel2.FontTags = TAG_BOLD;
+	gServerSettingsLabel2.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsLabel2.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel2.Visible = false;
+	
+	/* Gamemode name label */
+	gServerSettingsLabel3 = GUILabel( VectorScreen( serversettingsLabel3[0], serversettingsLabel3[1] ), ScreenSize( serversettingsLabel3[2], serversettingsLabel3[3] ), serversettingsLabel3[4] );
+	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel3.Colour = GUI_WINDOW_COLOR;
+	gServerSettingsLabel3.FontTags = TAG_BOLD;
+	gServerSettingsLabel3.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsLabel3.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel3.Visible = false;
+	
+	/* Max players label */
+	gServerSettingsLabel4 = GUILabel( VectorScreen( serversettingsLabel4[0], serversettingsLabel4[1] ), ScreenSize( serversettingsLabel4[2], serversettingsLabel4[3] ), serversettingsLabel4[4] );
+	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel4.Colour = GUI_WINDOW_COLOR;
+	gServerSettingsLabel4.FontTags = TAG_BOLD;
+	gServerSettingsLabel4.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsLabel4.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel4.Visible = false;
+	
+	/* Password label */
+	gServerSettingsLabel5 = GUILabel( VectorScreen( serversettingsLabel5[0], serversettingsLabel5[1] ), ScreenSize( serversettingsLabel5[2], serversettingsLabel5[3] ), serversettingsLabel5[4] );
+	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel5.Colour = GUI_WINDOW_COLOR;
+	gServerSettingsLabel5.FontTags = TAG_BOLD;
+	gServerSettingsLabel5.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsLabel5.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel5.Visible = false;
+	
+	/* Port label */
+	gServerSettingsLabel6 = GUILabel( VectorScreen( serversettingsLabel6[0], serversettingsLabel6[1] ), ScreenSize( serversettingsLabel6[2], serversettingsLabel6[3] ), serversettingsLabel6[4] );
+	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel6.Colour = GUI_WINDOW_COLOR;
+	gServerSettingsLabel6.FontTags = TAG_BOLD;
+	gServerSettingsLabel6.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsLabel6.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel6.Visible = false;
+	
+	/* Server name editbox */
+	gServerSettingsEditbox1 = GUIEditbox( VectorScreen( serversettingsEditbox1[0], serversettingsEditbox1[1] ), ScreenSize( serversettingsEditbox1[2], serversettingsEditbox1[3] ) );
+	gServerSettingsEditbox1.Text = "Liberty Unleashed Server";
+	gServerSettingsEditbox1.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsEditbox1.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsEditbox1.Visible = false;
+	
+	/* Map name editbox */
+	gServerSettingsEditbox2 = GUIEditbox( VectorScreen( serversettingsEditbox2[0], serversettingsEditbox2[1] ), ScreenSize( serversettingsEditbox2[2], serversettingsEditbox2[3] ) );
+	gServerSettingsEditbox2.Text = "Liberty City";
+	gServerSettingsEditbox2.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsEditbox2.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsEditbox2.Visible = false;
+	
+	/* Gamemode name editbox */
+	gServerSettingsEditbox3 = GUIEditbox( VectorScreen( serversettingsEditbox3[0], serversettingsEditbox3[1] ), ScreenSize( serversettingsEditbox3[2], serversettingsEditbox3[3] ) );
+	gServerSettingsEditbox3.Text = "Deathmatch";
+	gServerSettingsEditbox3.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsEditbox3.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsEditbox3.Visible = false;
+	
+	/* Max players editbox */
+	gServerSettingsEditbox4 = GUIEditbox( VectorScreen( serversettingsEditbox4[0], serversettingsEditbox4[1] ), ScreenSize( serversettingsEditbox4[2], serversettingsEditbox4[3] ) );
+	gServerSettingsEditbox4.Text = "128";
+	gServerSettingsEditbox4.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsEditbox4.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsEditbox4.Visible = false;
+
+	/* Password editbox */
+	gServerSettingsEditbox5 = GUIEditbox( VectorScreen( serversettingsEditbox5[0], serversettingsEditbox5[1] ), ScreenSize( serversettingsEditbox5[2], serversettingsEditbox5[3] ) );
+	gServerSettingsEditbox5.Text = "";
+	gServerSettingsEditbox5.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsEditbox5.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsEditbox5.Visible = false;
+	
+	/* Port editbox */
+	gServerSettingsEditbox6 = GUIEditbox( VectorScreen( serversettingsEditbox6[0], serversettingsEditbox6[1] ), ScreenSize( serversettingsEditbox6[2], serversettingsEditbox6[3] ) );
+	gServerSettingsEditbox6.Text = "2004";
+	gServerSettingsEditbox6.TextColour = GUI_TEXT_COLOR;
+	gServerSettingsEditbox6.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsEditbox6.Visible = false;
+	
+	/* Cancel button */
+	gServerSettingsButton0 = GUIButton( VectorScreen( serversettingsButton0[0], serversettingsButton0[1] ), ScreenSize( serversettingsButton0[2], serversettingsButton0[3] ), serversettingsButton0[4] );
+	if ( GUI_BUTTON_COLOR ) gServerSettingsButton0.Colour = GUI_BUTTON_COLOR;
+	gServerSettingsButton0.FontTags = TAG_BOLD;
+	gServerSettingsButton0.SetCallbackFunc( Menu5_Handle0 );
+	gServerSettingsButton0.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gServerSettingsButton0.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsButton0.Visible = true;
+	
+	/* Accept button */
+	gServerSettingsButton1 = GUIButton( VectorScreen( serversettingsButton1[0], serversettingsButton1[1] ), ScreenSize( serversettingsButton1[2], serversettingsButton1[3] ), serversettingsButton1[4] );
+	if ( GUI_BUTTON_COLOR ) gServerSettingsButton1.Colour = GUI_BUTTON_COLOR;
+	gServerSettingsButton1.FontTags = TAG_BOLD;
+	gServerSettingsButton1.SetCallbackFunc( Menu5_Handle1 );
+	gServerSettingsButton1.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gServerSettingsButton1.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsButton1.Visible = false;	
+	
+	
+	AddGUILayer( gServerSettingsWindow );
+	gServerSettingsWindow.AddChild( gServerSettingsLabel1 );
+	gServerSettingsWindow.AddChild( gServerSettingsLabel2 );
+	gServerSettingsWindow.AddChild( gServerSettingsLabel3 );
+	gServerSettingsWindow.AddChild( gServerSettingsLabel4 );
+	gServerSettingsWindow.AddChild( gServerSettingsLabel5 );
+	gServerSettingsWindow.AddChild( gServerSettingsLabel6 );
+	gServerSettingsWindow.AddChild( gServerSettingsEditbox1 );
+	gServerSettingsWindow.AddChild( gServerSettingsEditbox2 );
+	gServerSettingsWindow.AddChild( gServerSettingsEditbox3 );
+	gServerSettingsWindow.AddChild( gServerSettingsEditbox4 );
+	gServerSettingsWindow.AddChild( gServerSettingsEditbox5 );
+	gServerSettingsWindow.AddChild( gServerSettingsEditbox6 );
+	gServerSettingsWindow.AddChild( gServerSettingsButton0 );
+	gServerSettingsWindow.AddChild( gServerSettingsButton1 );
+	
+	
 	
 	
 	// ------------------------------- Game Settings Window
@@ -697,6 +901,60 @@ function onScriptLoad()
 	gGameSettingsButton1.Alpha = GUI_ELEMENT_ALPHA;
 	gGameSettingsButton1.Visible = false;
 	
+	/* Game speed + button */
+	gGameSettingsButton2 = GUIButton( VectorScreen( gamesettingsButton2[0], gamesettingsButton2[1] ), ScreenSize( gamesettingsButton2[2], gamesettingsButton2[3] ), gamesettingsButton2[4] );
+	if ( GUI_BUTTON_COLOR ) gGameSettingsButton2.Colour = GUI_BUTTON_COLOR;
+	gGameSettingsButton2.FontTags = TAG_BOLD;
+	gGameSettingsButton2.SetCallbackFunc( Menu4_Handle2 );
+	gGameSettingsButton2.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gGameSettingsButton2.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsButton2.Visible = false;
+	
+	/* Game speed - button */
+	gGameSettingsButton3 = GUIButton( VectorScreen( gamesettingsButton3[0], gamesettingsButton3[1] ), ScreenSize( gamesettingsButton3[2], gamesettingsButton3[3] ), gamesettingsButton3[4] );
+	if ( GUI_BUTTON_COLOR ) gGameSettingsButton3.Colour = GUI_BUTTON_COLOR;
+	gGameSettingsButton3.FontTags = TAG_BOLD;
+	gGameSettingsButton3.SetCallbackFunc( Menu4_Handle3 );
+	gGameSettingsButton3.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gGameSettingsButton3.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsButton3.Visible = false;
+	
+	/* Gravity + button */
+	gGameSettingsButton4 = GUIButton( VectorScreen( gamesettingsButton4[0], gamesettingsButton4[1] ), ScreenSize( gamesettingsButton4[2], gamesettingsButton4[3] ), gamesettingsButton4[4] );
+	if ( GUI_BUTTON_COLOR ) gGameSettingsButton4.Colour = GUI_BUTTON_COLOR;
+	gGameSettingsButton4.FontTags = TAG_BOLD;
+	gGameSettingsButton4.SetCallbackFunc( Menu4_Handle4 );
+	gGameSettingsButton4.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gGameSettingsButton4.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsButton4.Visible = false;
+	
+	/* Gravity ++ button */
+	gGameSettingsButton5 = GUIButton( VectorScreen( gamesettingsButton5[0], gamesettingsButton5[1] ), ScreenSize( gamesettingsButton5[2], gamesettingsButton5[3] ), gamesettingsButton5[4] );
+	if ( GUI_BUTTON_COLOR ) gGameSettingsButton5.Colour = GUI_BUTTON_COLOR;
+	gGameSettingsButton5.FontTags = TAG_BOLD;
+	gGameSettingsButton5.SetCallbackFunc( Menu4_Handle5 );
+	gGameSettingsButton5.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gGameSettingsButton5.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsButton5.Visible = false;
+	
+	/* Gravity - button */
+	gGameSettingsButton6 = GUIButton( VectorScreen( gamesettingsButton6[0], gamesettingsButton6[1] ), ScreenSize( gamesettingsButton6[2], gamesettingsButton6[3] ), gamesettingsButton6[4] );
+	if ( GUI_BUTTON_COLOR ) gGameSettingsButton6.Colour = GUI_BUTTON_COLOR;
+	gGameSettingsButton6.FontTags = TAG_BOLD;
+	gGameSettingsButton6.SetCallbackFunc( Menu4_Handle6 );
+	gGameSettingsButton6.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gGameSettingsButton6.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsButton6.Visible = false;
+	
+	/* Gravity -- button */
+	gGameSettingsButton7 = GUIButton( VectorScreen( gamesettingsButton7[0], gamesettingsButton7[1] ), ScreenSize( gamesettingsButton7[2], gamesettingsButton7[3] ), gamesettingsButton7[4] );
+	if ( GUI_BUTTON_COLOR ) gGameSettingsButton7.Colour = GUI_BUTTON_COLOR;
+	gGameSettingsButton7.FontTags = TAG_BOLD;
+	gGameSettingsButton7.SetCallbackFunc( Menu4_Handle7 );
+	gGameSettingsButton7.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gGameSettingsButton7.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsButton7.Visible = false;
+	
 	AddGUILayer( gGameSettingsWindow );
 	gGameSettingsWindow.AddChild( gGameSettingsLabel1 );
 	gGameSettingsWindow.AddChild( gGameSettingsLabel2 );
@@ -712,6 +970,12 @@ function onScriptLoad()
 	gGameSettingsWindow.AddChild( gGameSettingsCheckbox4 );
 	gGameSettingsWindow.AddChild( gGameSettingsButton0 );
 	gGameSettingsWindow.AddChild( gGameSettingsButton1 );
+	gGameSettingsWindow.AddChild( gGameSettingsButton2 );
+	gGameSettingsWindow.AddChild( gGameSettingsButton3 );
+	gGameSettingsWindow.AddChild( gGameSettingsButton4 );
+	gGameSettingsWindow.AddChild( gGameSettingsButton5 );
+	gGameSettingsWindow.AddChild( gGameSettingsButton6 );
+	gGameSettingsWindow.AddChild( gGameSettingsButton7 );
 	
 	return 1;
 }
@@ -739,6 +1003,8 @@ function ProcessConsoleMessage()
 	else if (( iConsoleMode == 2 ) && ( iAdminLevel >= PLAYER_CONSOLE_MODE2 )) SetHealth();
 	else if (( iConsoleMode == 3 ) && ( iAdminLevel >= PLAYER_CONSOLE_MODE3 )) SetArmor();
 	else if (( iConsoleMode == 4 ) && ( iAdminLevel >= PLAYER_CONSOLE_MODE4 )) SetSkin();
+	else if (( iConsoleMode == 5 ) && ( iAdminLevel >= PLAYER_CONSOLE_MODE5 )) BanIP();
+	else if (( iConsoleMode == 6 ) && ( iAdminLevel >= PLAYER_CONSOLE_MODE6 )) UnbanIP();
 }
 
 function ChangeMode()
@@ -749,7 +1015,7 @@ function ChangeMode()
 	if ( iConsoleMode == 0 )
 	{
 		iConsoleMode = 1;
-		gPlayerManagerLabel7.Text = "[2/5] Mode: Private message";
+		gPlayerManagerLabel7.Text = "[2/7] Mode: Private message";
 		gPlayerManagerEditbox1.Text = "";
 		UnbindKey( BIND_KEY, BINDTYPE_DOWN, "HideAdminPanel" );
 		if (( iAdminLevel < PLAYER_CONSOLE_MODE1 ) || ( !pPlayer )) ChangeMode();
@@ -757,28 +1023,42 @@ function ChangeMode()
 	else if ( iConsoleMode == 1 )
 	{
 		iConsoleMode = 2;
-		gPlayerManagerLabel7.Text = "[3/5] Mode: Set health";
+		gPlayerManagerLabel7.Text = "[3/7] Mode: Set health";
 		gPlayerManagerEditbox1.Text = "";
 		if (( iAdminLevel < PLAYER_CONSOLE_MODE2 ) || ( !pPlayer )) ChangeMode();
 	}
 	else if ( iConsoleMode == 2 )
 	{
 		iConsoleMode = 3;
-		gPlayerManagerLabel7.Text = "[4/5] Mode: Set armor";
+		gPlayerManagerLabel7.Text = "[4/7] Mode: Set armor";
 		gPlayerManagerEditbox1.Text = "";
 		if (( iAdminLevel < PLAYER_CONSOLE_MODE3 ) || ( !pPlayer )) ChangeMode();
 	}
 	else if ( iConsoleMode == 3 )
 	{
 		iConsoleMode = 4;
-		gPlayerManagerLabel7.Text = "[5/5] Mode: Set skin";
+		gPlayerManagerLabel7.Text = "[5/7] Mode: Set skin";
 		gPlayerManagerEditbox1.Text = "";
 		if (( iAdminLevel < PLAYER_CONSOLE_MODE4 ) || ( !pPlayer )) ChangeMode();
 	}
 	else if ( iConsoleMode == 4 )
 	{
+		iConsoleMode = 5;
+		gPlayerManagerLabel7.Text = "[6/7] Mode: Ban IP";
+		gPlayerManagerEditbox1.Text = "";
+		if ( iAdminLevel < PLAYER_CONSOLE_MODE5 ) ChangeMode();
+	}
+	else if ( iConsoleMode == 5 )
+	{
+		iConsoleMode = 6;
+		gPlayerManagerLabel7.Text = "[7/7] Mode: Unban IP";
+		gPlayerManagerEditbox1.Text = "";
+		if ( iAdminLevel < PLAYER_CONSOLE_MODE6 ) ChangeMode();
+	}
+	else if ( iConsoleMode == 6 )
+	{
 		iConsoleMode = 0;
-		gPlayerManagerLabel7.Text = "[1/5] Mode: Find player";
+		gPlayerManagerLabel7.Text = "[1/7] Mode: Find player";
 		gPlayerManagerEditbox1.Text = "";
 		UnbindKey( BIND_KEY, BINDTYPE_DOWN, "HideAdminPanel" );
 	}
@@ -833,6 +1113,23 @@ function SetSkin()
 	gPlayerManagerEditbox1.Text = "";
 }
 
+function BanIP()
+{
+	if ( gPlayerManagerEditbox1.Text == "" ) return 1;
+	
+	CallServerFunc( "adminpanel/server.nut", "PlayerManager_BanIP", pLocalPlayer, gPlayerManagerEditbox1.Text );
+	
+	gPlayerManagerEditbox1.Text = "";
+}
+function UnbanIP()
+{
+	if ( gPlayerManagerEditbox1.Text == "" ) return 1;
+	
+	CallServerFunc( "adminpanel/server.nut", "PlayerManager_UnbanIP", pLocalPlayer, gPlayerManagerEditbox1.Text );
+	
+	gPlayerManagerEditbox1.Text = "";
+}
+
 function SearchPlayer()
 {
 	if ( gPlayerManagerEditbox1.Text == "" ) return 1;
@@ -853,6 +1150,7 @@ function SpectatePlayer_Process( pPlayer )
 	local vCameraPosition = pPlayer.Pos;
 	local vCameraPointAt = pPlayer.Pos;
 	
+	vCameraPosition.x += 20.0;
 	vCameraPosition.z += 20.0;
 	
 	SetCameraMatrix( vCameraPosition, vCameraPointAt );
@@ -873,6 +1171,11 @@ function TimeAndWeather_Update( iWeather, iHour, iMin, bTimeLock, bWeatherLock )
 	gTimeWeatherCheckbox2.Checked = bWeatherLock;
 }
 
+function PlayerManager_Update( szIP )
+{
+	gPlayerManagerLabel6.Text = "IP:" + szIP;
+}
+
 function GameSettings_Update( fGameSpeed, fGameGravity, bFlyingCarsCheat, bHandlingCheat, bFriendlyFire, bSSVBridge )
 {
 	gGameSettingsEditbox1.Text = fGameSpeed.tostring();
@@ -881,6 +1184,16 @@ function GameSettings_Update( fGameSpeed, fGameGravity, bFlyingCarsCheat, bHandl
 	gGameSettingsCheckbox2.Checked = bHandlingCheat;
 	gGameSettingsCheckbox3.Checked = bFriendlyFire;
 	gGameSettingsCheckbox4.Checked = bSSVBridge;
+}
+
+function ServerSettings_Update( szServerName, szMapName, szGamemodeName, iMaxPlayers, szPassword, iPort )
+{
+	gServerSettingsEditbox1.Text = szServerName;
+	gServerSettingsEditbox2.Text = szMapName;
+	gServerSettingsEditbox3.Text = szGamemodeName;
+	gServerSettingsEditbox4.Text = iMaxPlayers.tostring();
+	if ( szPassword ) gServerSettingsEditbox5.Text = szPassword;
+	gServerSettingsEditbox6.Text = iPort.tostring();
 }
 
 function ShowAdminPanel()
@@ -892,7 +1205,7 @@ function ShowAdminPanel()
 	if ( iAdminLevel >= TIME_WEATHER_ACCESS ) gTitleButton1.Visible = true;
 	if ( iAdminLevel >= PLAYER_MANAGER_ACCESS ) gTitleButton2.Visible = true;
 	//if ( iAdminLevel >= VEHICLE_MANAGER_ACCESS ) gTitleButton3.Visible = true; // for future use
-	if ( iAdminLevel >= MISC_ACCESS ) gTitleButton4.Visible = true;
+	if ( iAdminLevel >= SERVER_ACCESS ) gTitleButton4.Visible = true;
 	if ( iAdminLevel >= GAME_ACCESS ) gTitleButton5.Visible = true;
 	
 	ShowMouseCursor( true );
@@ -915,6 +1228,7 @@ function HideAdminPanel()
 	gTimeWeatherWindow.Visible = false;
 	gPlayerManagerWindow.Visible = false;
 	gGameSettingsWindow.Visible = false;
+	gServerSettingsWindow.Visible = false;
 	
 	ShowMouseCursor( false );
 	SetHUDItemEnabled( HUD_RADAR, true );
@@ -928,6 +1242,8 @@ function HideAdminPanel()
 
 function ShowTimeAndWheaterSettings()
 {
+	BindKey( BIND_KEY, BINDTYPE_DOWN, "HideAdminPanel" );
+	
 	if ( gTimeWeatherWindow.Visible ) // close
 	{
 		if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_EXIT );
@@ -970,6 +1286,7 @@ function ShowTimeAndWheaterSettings()
 		
 		gPlayerManagerWindow.Visible = false;
 		gGameSettingsWindow.Visible = false;
+		gServerSettingsWindow.Visible = false;
 		gTimeWeatherWindow.Visible = true;
 		
 		SetCameraMatrix( Vector( -739.0, 480.0, 132.0 ), Vector( -653.0, -575.0, 29.0 ) );
@@ -987,11 +1304,12 @@ function PlayerMenagerRefresh()
 		gPlayerManagerLabel3.Text = "Armor: 100";
 		gPlayerManagerLabel4.Text = "Skin: 0";
 		gPlayerManagerLabel5.Text = "Ping: 0ms";
-		gPlayerManagerLabel6.Text = "Vehicle: 0";
+		gPlayerManagerLabel6.Text = "IP:";
 		gPlayerManagerButton3.Visible = false;
 		gPlayerManagerButton4.Visible = false;
 		gPlayerManagerButton5.Visible = false;
 		gPlayerManagerButton6.Visible = false;
+		gPlayerManagerButton8.Visible = false;
 		gPlayerManagerLabel2.Visible = false;
 		gPlayerManagerLabel3.Visible = false;
 		gPlayerManagerLabel4.Visible = false;
@@ -1000,9 +1318,10 @@ function PlayerMenagerRefresh()
 		gPlayerManagerProgressbar1.Visible = false;
 		gPlayerManagerProgressbar2.Visible = false;
 		
-		ChangeMode();
-		
 		SpectatePlayer_Process( pLocalPlayer );
+		
+		if ( iConsoleMode ==  0 || 5 || 6 ) return 1;
+		else ChangeMode();
 	}
 	else
 	{
@@ -1011,12 +1330,13 @@ function PlayerMenagerRefresh()
 		gPlayerManagerLabel3.Text = "Armor: " + pPlayer.Armour;
 		gPlayerManagerLabel4.Text = "Skin: " + pPlayer.Skin;
 		gPlayerManagerLabel5.Text = "Ping: " + pPlayer.Ping + "ms";
-		//gPlayerManagerLabel6.Text = "Vehicle: " + pPlayer.Vehicle.Model;
+		//gPlayerManagerLabel6.Text = "IP: 0.0.0.0";
 		gPlayerManagerProgressbar1.Value = pPlayer.Health;
 		gPlayerManagerProgressbar2.Value = pPlayer.Armour;
 		if ( pPlayer.Frozen ) gPlayerManagerButton5.Text = "Unfreeze";
 		else gPlayerManagerButton5.Text = "Freeze";
 
+		if ( iAdminLevel >= PLAYER_MANAGER_BAN ) gPlayerManagerButton8.Visible = true;
 		if ( iAdminLevel >= PLAYER_MANAGER_KICK ) gPlayerManagerButton3.Visible = true;
 		if ( iAdminLevel >= PLAYER_MANAGER_KILL ) gPlayerManagerButton4.Visible = true;
 		if ( iAdminLevel >= PLAYER_MANAGER_FREEZE ) gPlayerManagerButton5.Visible = true;
@@ -1026,7 +1346,7 @@ function PlayerMenagerRefresh()
 		gPlayerManagerLabel3.Visible = true;
 		gPlayerManagerLabel4.Visible = true;
 		gPlayerManagerLabel5.Visible = true;
-		//gPlayerManagerLabel6.Visible = true;
+		gPlayerManagerLabel6.Visible = true;
 		gPlayerManagerProgressbar1.Visible = true;
 		gPlayerManagerProgressbar2.Visible = true;
 		
@@ -1048,19 +1368,27 @@ function ShowPlayerManager()
 		if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_EXIT );
 		UnbindKey( KEY_RETURN, BINDTYPE_DOWN, "ProcessConsoleMessage" );
 		UnbindKey( KEY_END, BINDTYPE_DOWN, "ChangeMode" );
+		BindKey( BIND_KEY, BINDTYPE_DOWN, "HideAdminPanel" );
 		gPlayerManagerWindow.Visible = false;
 	}
 	else
 	{
 		if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_MENU );
+		if ( iConsoleMode == 0 ) UnbindKey( BIND_KEY, BINDTYPE_DOWN, "HideAdminPanel" );
+		
+		local pPlayer = FindPlayer( iPlayerID );
+		if ( pPlayer ) CallServerFunc( "adminpanel/server.nut", "PlayerManager_LoadData", pLocalPlayer, pPlayer );
+		
 		gTimeWeatherWindow.Visible = false;
 		gGameSettingsWindow.Visible = false;
+		gServerSettingsWindow.Visible = false;
 		gPlayerManagerWindow.Visible = true;
 	}
 }
 
 function ShowGameSettings()
 {
+	BindKey( BIND_KEY, BINDTYPE_DOWN, "HideAdminPanel" );
 	SpectatePlayer_Process( pLocalPlayer );
 	
 	if ( gGameSettingsWindow.Visible )
@@ -1078,12 +1406,18 @@ function ShowGameSettings()
 			gGameSettingsLabel1.Visible = true;		
 			gGameSettingsEditbox1.Visible = true;
 			gGameSettingsButton1.Visible = true;
+			gGameSettingsButton2.Visible = true;
+			gGameSettingsButton3.Visible = true;
 		}
 		if ( iAdminLevel >= GAME_SETTINGS_GRAVITY )
 		{	
 			gGameSettingsLabel2.Visible = true;		
 			gGameSettingsEditbox2.Visible = true;
 			gGameSettingsButton1.Visible = true;
+			gGameSettingsButton4.Visible = true;
+			gGameSettingsButton5.Visible = true;
+			gGameSettingsButton6.Visible = true;
+			gGameSettingsButton7.Visible = true;
 		}
 		if ( iAdminLevel >= GAME_SETTINGS_FLYINGC )
 		{	
@@ -1112,7 +1446,68 @@ function ShowGameSettings()
 		
 		gTimeWeatherWindow.Visible = false;
 		gPlayerManagerWindow.Visible = false;
+		gServerSettingsWindow.Visible = false;
 		gGameSettingsWindow.Visible = true;
+	}
+}
+
+function ShowServerSettings()
+{
+	BindKey( BIND_KEY, BINDTYPE_DOWN, "HideAdminPanel" );
+	SpectatePlayer_Process( pLocalPlayer );
+	
+	if ( gServerSettingsWindow.Visible )
+	{
+		if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_EXIT );
+		gServerSettingsWindow.Visible = false;
+	}
+	else
+	{
+		if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_MENU );
+		CallServerFunc( "adminpanel/server.nut", "ServerSettings_LoadData", pLocalPlayer );
+
+		if ( iAdminLevel >= SERVER_SETTINGS_SNAME )
+		{
+			gServerSettingsLabel1.Visible = true;
+			gServerSettingsEditbox1.Visible = true;
+			gServerSettingsButton1.Visible = true;
+		}
+		if ( iAdminLevel >= SERVER_SETTINGS_MNAME )
+		{
+			gServerSettingsLabel2.Visible = true;
+			gServerSettingsEditbox2.Visible = true;
+			gServerSettingsButton1.Visible = true;
+		}
+		if ( iAdminLevel >= SERVER_SETTINGS_GNAME )
+		{
+			gServerSettingsLabel3.Visible = true;
+			gServerSettingsEditbox3.Visible = true;
+			gServerSettingsButton1.Visible = true;
+		}
+		if ( iAdminLevel >= SERVER_SETTINGS_MPLAYERS )
+		{
+			gServerSettingsLabel4.Visible = true;
+			gServerSettingsEditbox4.Visible = true;
+			gServerSettingsButton1.Visible = true;
+		}
+		if ( iAdminLevel >= SERVER_SETTINGS_PASSWORD )
+		{
+			gServerSettingsLabel5.Visible = true;
+			gServerSettingsEditbox5.Visible = true;
+			gServerSettingsButton1.Visible = true;
+		}
+		if ( iAdminLevel >= SERVER_SETTINGS_PORT )
+		{
+			gServerSettingsLabel6.Visible = true;
+			gServerSettingsEditbox6.Visible = true;
+			gServerSettingsButton1.Visible = true;
+		}
+	
+		
+		gTimeWeatherWindow.Visible = false;
+		gPlayerManagerWindow.Visible = false;
+		gGameSettingsWindow.Visible = false;
+		gServerSettingsWindow.Visible = true;
 	}
 }
 
@@ -1140,13 +1535,10 @@ function Menu1_Handle3()		// Vehicle Manager, future use
 	if ( !gTitleButton3.Visible ) return;
 }
 
-local isnd = 0;
-function Menu1_Handle4()		// Misc, future use
+function Menu1_Handle4()		// Server Settings
 {
 	if ( !gTitleButton4.Visible ) return;
-	isnd++;
-	Message( isnd.tostring() );
-	PlayFrontEndSound( isnd );
+	ShowServerSettings();
 }
 function Menu1_Handle5()		// Game Setting
 {
@@ -1200,16 +1592,11 @@ function Menu2_Handle3()		// -
 // ---------------------------------------- Player Manager
 function Menu3_Handle0()		// Cancel
 {
-	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_EXIT );
-	UnbindKey( KEY_RETURN, BINDTYPE_DOWN, "ProcessConsoleMessage" );
-	UnbindKey( KEY_END, BINDTYPE_DOWN, "ChangeMode" );
-	gPlayerManagerWindow.Visible = false;
+	ShowPlayerManager();t
 }
-
 function Menu3_Handle1()		// Accept, for future use?
 {
 }
-
 function Menu3_Handle2()		// <
 {
 	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
@@ -1217,20 +1604,21 @@ function Menu3_Handle2()		// <
 	
 	iPlayerID--;
 	local pPlayer = FindPlayer( iPlayerID );
+	if ( pPlayer ) CallServerFunc( "adminpanel/server.nut", "PlayerManager_LoadData", pLocalPlayer, pPlayer );
 	
 	PlayerMenagerRefresh();
 }
-
 function Menu3_Handle3()		// >
 {
 	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
 	if ( iPlayerID == iMaxPlayers ) return 1;
 	
 	iPlayerID++;
+	local pPlayer = FindPlayer( iPlayerID );
+	if ( pPlayer ) CallServerFunc( "adminpanel/server.nut", "PlayerManager_LoadData", pLocalPlayer, pPlayer );
 	
 	PlayerMenagerRefresh();
 }
-
 function Menu3_Handle4()		// Kick
 {
 	if ( !gPlayerManagerButton3.Visible ) return 1;
@@ -1238,7 +1626,6 @@ function Menu3_Handle4()		// Kick
 	local pPlayer = FindPlayer( iPlayerID );
 	if ( pPlayer ) CallServerFunc( "adminpanel/server.nut", "PlayerManager_Kick", pLocalPlayer, pPlayer );
 }
-
 function Menu3_Handle5()		// Kill
 {
 	if ( !gPlayerManagerButton4.Visible ) return 1;
@@ -1246,7 +1633,6 @@ function Menu3_Handle5()		// Kill
 	local pPlayer = FindPlayer( iPlayerID );
 	if ( pPlayer )  CallServerFunc( "adminpanel/server.nut", "PlayerManager_Kill", pLocalPlayer, pPlayer );
 }
-
 function Menu3_Handle6()		// Freeze
 {
 	if ( !gPlayerManagerButton5.Visible ) return 1;
@@ -1254,13 +1640,19 @@ function Menu3_Handle6()		// Freeze
 	local pPlayer = FindPlayer( iPlayerID );
 	if ( pPlayer ) CallServerFunc( "adminpanel/server.nut", "PlayerManager_SetFreeze", pLocalPlayer, pPlayer, !pPlayer.Frozen );
 }
-
 function Menu3_Handle7()		// Heal
 {
 	if ( !gPlayerManagerButton6.Visible ) return 1;
 	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
 	local pPlayer = FindPlayer( iPlayerID );
 	if ( pPlayer ) CallServerFunc( "adminpanel/server.nut", "PlayerManager_Heal", pLocalPlayer, pPlayer );
+}
+function Menu3_Handle8()		// Ban
+{
+	if ( !gPlayerManagerButton8.Visible ) return 1;
+	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
+	local pPlayer = FindPlayer( iPlayerID );
+	if ( pPlayer ) CallServerFunc( "adminpanel/server.nut", "PlayerManager_Ban", pLocalPlayer, pPlayer );
 }
 
 // ---------------------------------------- Menu4 Handler
@@ -1284,12 +1676,104 @@ function Menu4_Handle1()		// Accept
 	
 	CallServerFunc( "adminpanel/server.nut", "GameSettings_Accept", pLocalPlayer, fGameSpeed, fGameGravity, bFlyingCarsCheat, bHandlingCheat, bFriendlyFire, bSSVBridge );
 }
+function Menu4_Handle2()		// Speed +
+{
+	if ( !gGameSettingsButton2.Visible ) return 1;
+	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
+	
+	local fGameSpeed = gGameSettingsEditbox1.Text.tofloat();
+	fGameSpeed+=0.1;
+	gGameSettingsEditbox1.Text = fGameSpeed.tostring();
+	
+	CallServerFunc( "adminpanel/server.nut", "GameSettings_SetSpeed", pLocalPlayer, fGameSpeed );
+}
+function Menu4_Handle3()		// Speed -
+{
+	if ( !gGameSettingsButton3.Visible ) return 1;
+	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
+	
+	local fGameSpeed = gGameSettingsEditbox1.Text.tofloat();
+	fGameSpeed-=0.1;
+	gGameSettingsEditbox1.Text = fGameSpeed.tostring();
+	
+	CallServerFunc( "adminpanel/server.nut", "GameSettings_SetSpeed", pLocalPlayer, fGameSpeed );
+}
+function Menu4_Handle4()		// Gravity +
+{
+	if ( !gGameSettingsButton4.Visible ) return 1;
+	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
+	
+	local fGravity = gGameSettingsEditbox2.Text.tofloat();
+	fGravity+=0.001;
+	gGameSettingsEditbox2.Text = fGravity.tostring();
+	
+	CallServerFunc( "adminpanel/server.nut", "GameSettings_SetGravity", pLocalPlayer, fGravity );
+}
+function Menu4_Handle5()		// Gravity ++
+{
+	if ( !gGameSettingsButton3.Visible ) return 1;
+	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
+	
+	local fGravity = gGameSettingsEditbox2.Text.tofloat();
+	fGravity+=0.1;
+	gGameSettingsEditbox2.Text = fGravity.tostring();
+	
+	CallServerFunc( "adminpanel/server.nut", "GameSettings_SetGravity", pLocalPlayer, fGravity );
+}
+function Menu4_Handle6()		// Gravity -
+{
+	if ( !gGameSettingsButton3.Visible ) return 1;
+	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
+	
+	local fGravity = gGameSettingsEditbox2.Text.tofloat();
+	fGravity-=0.001;
+	gGameSettingsEditbox2.Text = fGravity.tostring();
+	
+	CallServerFunc( "adminpanel/server.nut", "GameSettings_SetGravity", pLocalPlayer, fGravity );
+}
+function Menu4_Handle7()		// Gravity --
+{
+	if ( !gGameSettingsButton3.Visible ) return 1;
+	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
+	
+	local fGravity = gGameSettingsEditbox2.Text.tofloat();
+	fGravity-=0.1;
+	gGameSettingsEditbox2.Text = fGravity.tostring();
+	
+	CallServerFunc( "adminpanel/server.nut", "GameSettings_SetGravity", pLocalPlayer, fGravity );
+}
 
+
+// ---------------------------------------- Menu5 Handler
+// ---------------------------------------- Server Settings Menu
+function Menu5_Handle0()		// Cancel
+{
+	ShowServerSettings();
+}
+
+function Menu5_Handle1()		// Accept
+{
+	if ( !gServerSettingsButton1.Visible ) return 1;
+	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_ACCEPT );
+	
+	local szServerName = gServerSettingsEditbox1.Text;
+	local szMapName = gServerSettingsEditbox2.Text;
+	local szGamemodeName = gServerSettingsEditbox3.Text;
+	local iMaxPlayers = gServerSettingsEditbox4.Text.tointeger();
+	local szPassword = gServerSettingsEditbox5.Text;
+	local iPort = gServerSettingsEditbox6.Text.tointeger();
+	
+	CallServerFunc( "adminpanel/server.nut", "ServerSettings_Accept", pLocalPlayer, szServerName, szMapName, szGamemodeName, iMaxPlayers, szPassword, iPort );
+}
 
 function onClientRender()
 {
+	if ( gTimeWeatherWindow.Visible ) return 1;
 	if ( gPlayerManagerWindow.Visible ) PlayerMenagerRefresh();
-	if ( gGameSettingsWindow.Visible ) SpectatePlayer_Process( pLocalPlayer );
-	if ( gTitleWindow.Visible ) pLocalPlayer.Frozen = true;
+	else if ( gTitleWindow.Visible )
+	{
+		pLocalPlayer.Frozen = true;
+		SpectatePlayer_Process( pLocalPlayer );
+	}
 	return 1;
 }

@@ -1,0 +1,14 @@
+Version 1.1 (01.11.2013):
+- added +/- buttons to control gravity and game speed
+- added "Server Settings" tab
+- added "Ban" player button
+- added IP in "Player Manager"
+- added "Ban IP" console mode
+- added "Unban IP" console mode
+- added some server side checks to prevent errors
+- fixed freezed camera issue in panel main menu
+- fixed "P" bind issues in "Player Manager" (disabled bind for mode 1 and 2)
+- fixed "Find player" mode bug when "Free slot" was selected
+
+Version 1.0 (31.10.2013):
+- initial release
