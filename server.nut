@@ -1,5 +1,5 @@
 /* ############################################################## */
-/* #			Admin Panel v1.1 by Stoku						# */
+/* #			Admin Panel v1.1 R2 by Stoku					# */
 /* #					Have fun!								# */
 /* ############################################################## */
 
@@ -8,7 +8,7 @@ local CONSOLE_PREFIX		= "[AP]";
 
 function onScriptLoad()
 {
-	print("Admin Panel v1.1 - Loaded!");
+	print("Admin Panel v1.1 R2 - Loaded!");
 	return 1;
 }
 

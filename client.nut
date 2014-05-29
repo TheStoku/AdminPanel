@@ -1,10 +1,10 @@
 /* ############################################################## */
-/* #			Admin Panel v1.1 by Stoku						# */
+/* #			Admin Panel v1.1 R2 by Stoku					# */
 /* #					Have fun!								# */
 /* ############################################################## */
 
 /* Author and versioning info */
-local SCRIPT_VERSION			= "1.1";
+local SCRIPT_VERSION			= "1.1 R2";
 local SCRIPT_AUTHOR				= "Stoku";
 local LANGUAGE_NAME				= "english";
 local LANGUAGE_AUTHOR			= "Stoku";
@@ -119,8 +119,8 @@ local timeweatherLabel3 = [ 5, 65, 100, 25, "Set Time:" ];											// X pos, Y
 local timeweatherLabel4 = [ 5, 95, 100, 25, "Set Weather:" ];										// X pos, Y pos, X Size, Y Size, Text
 local timeweatherCheckbox1 = [ 140, 10, 10, 10, true ];												// X pos, Y pos, X Size, Y Size, bChecked
 local timeweatherCheckbox2 = [ 140, 40, 10, 10, true ];												// X pos, Y pos, X Size, Y Size, bChecked
-local timeweatherEditbox1 = [ 140, 65, 35, 25 ];													// X pos, Y pos, X Size, Y Size
-local timeweatherEditbox2 = [ 175, 65, 35, 25 ];													// X pos, Y pos, X Size, Y Size
+local timeweatherEditbox1 = [ 140, 65, 60, 25 ];													// X pos, Y pos, X Size, Y Size
+local timeweatherEditbox2 = [ 200, 65, 60, 25 ];													// X pos, Y pos, X Size, Y Size
 local timeweatherEditbox3 = [ 140, 95, 35, 25 ];													// X pos, Y pos, X Size, Y Size
 local timeweatherButton1 = [ 175, 95, 25, 25, "+" ];												// X pos, Y pos, X Size, Y Size, Text
 local timeweatherButton2 = [ 200, 95, 25, 25, "-" ];												// X pos, Y pos, X Size, Y Size, Text
@@ -1464,6 +1464,7 @@ function ShowServerSettings()
 	else
 	{
 		if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_MENU );
+		UnbindKey( BIND_KEY, BINDTYPE_DOWN, "HideAdminPanel" );
 		CallServerFunc( "adminpanel/server.nut", "ServerSettings_LoadData", pLocalPlayer );
 
 		if ( iAdminLevel >= SERVER_SETTINGS_SNAME )

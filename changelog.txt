@@ -1,3 +1,7 @@
+Version 1.1 R2 (02.11.2013)
+- fixed "P" bind in "Server Settings"
+- streched time (hours and minutes) input boxes
+
 Version 1.1 (01.11.2013):
 - added +/- buttons to control gravity and game speed
 - added "Server Settings" tab
