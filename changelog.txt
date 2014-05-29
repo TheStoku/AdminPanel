@@ -1,6 +1,23 @@
-Version 1.1 R2 (02.11.2013)
-- fixed "P" bind in "Server Settings"
-- streched time (hours and minutes) input boxes
+Version 1.2 (29.05.2014):
+- [GUI] added "Vehicle Manager" tab
+- [GUI] added color picker for vehicles
+- [GUI] added teleport feature for players/vehicles
+- [GUI] added "Set admin level" mode
+- [GUI] added "All" checkbox to specify if you want to work on one player or all players (teleport all, kill all etc.)
+- [GUI] added shadows for text which makes it more readable and nicer
+- [GUI] some code improvements
+- [CLIENT] fixed delayed settings load in "Time & Weather", "Server Settings" and "Game Settings" tab
+- [CLIENT] fixed spawnscreen bug
+- [CLIENT] fixed spectator mode
+- [SERVER] added script autoload feature (thanks to Thijn). Just paste any .nut file into "adminpanel/autoload/" dir
+- [SERVER] added "autoload/consolechat.nut", an example script and autoload feature
+- [SERVER] added some new ADMIN_ECHO modes
+- [SERVER] added server console commands, try 'help', 'cmd', or 'commands'
+- [SERVER/CLIENT] added many checks, security fixes and did some code cleanups
+
+Version 1.1 R2 (02.11.2013):
+- fixed "P" bind in "Server Settings" tab
+- stretched time (hours and minutes) input boxes
 
 Version 1.1 (01.11.2013):
 - added +/- buttons to control gravity and game speed
@@ -11,7 +28,7 @@ Version 1.1 (01.11.2013):
 - added "Unban IP" console mode
 - added some server side checks to prevent errors
 - fixed freezed camera issue in panel main menu
-- fixed "P" bind issues in "Player Manager" (disabled bind for mode 1 and 2)
+- fixed "P" bind issues in "Player Manager" (disabled bind for player console mode 1 and 2)
 - fixed "Find player" mode bug when "Free slot" was selected
 
 Version 1.0 (31.10.2013):
