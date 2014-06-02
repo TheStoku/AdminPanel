@@ -153,6 +153,7 @@ function Load()
 		WriteIniInteger( "Scripts/adminpanel/config.ini", "server_config", "MaxPlayers", GetMaxPlayers() );
 		WriteIniString( "Scripts/adminpanel/config.ini", "server_config", "ServerPassword", GetPassword() );
 		WriteIniInteger( "Scripts/adminpanel/config.ini", "server_config", "Port", GetPort() );
+		WriteIniInteger( "Scripts/adminpanel/config.ini", "panel_config", "UseAutoloader", true );
 		print( "# Config: server config created!" );
 	}
 	else
