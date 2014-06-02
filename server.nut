@@ -183,8 +183,12 @@ function Autoload()
 		local list = GetFileList( "Scripts/adminpanel/autoload", "nut" );
 		for( local i = 0; i < list.len(); i++ )
 		{
-			dofile( "Scripts/adminpanel/autoload/" + list[i] );
-			print( "# Autoloader: " + list[i] + " - loaded!" );
+			if ( list[i].slice(0,4) == "off_" ) return 0;
+			else
+			{
+				dofile( "Scripts/adminpanel/autoload/" + list[i] );
+				print( "# Autoloader: " + list[i] + " - loaded!" );
+			}
 		}
 	}
 	else print( "# Autoloader: failed to load module! Visit forums to find solution!" );
