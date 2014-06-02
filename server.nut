@@ -179,17 +179,25 @@ function Autoload()
 	{
 		print( "# Autoloader: loading scripts..." );
 		
+		local iCount = 0, iLoadCount = 0, iIgnoreCount = 0;
+		
 		// Thanks to Thijn
 		local list = GetFileList( "Scripts/adminpanel/autoload", "nut" );
 		for( local i = 0; i < list.len(); i++ )
 		{
-			if ( list[i].slice(0,4) == "off_" ) return 0;
+			iCount++;
+			
+			if ( list[i].slice(0,4) == "off_" ) iIgnoreCount++;
 			else
 			{
 				dofile( "Scripts/adminpanel/autoload/" + list[i] );
 				print( "# Autoloader: " + list[i] + " - loaded!" );
+				
+				iLoadCount++;
 			}
 		}
+		
+		print( "# Autoloader: found " + iCount + " scripts - loaded " + iLoadCount + " ignored " + iIgnoreCount );
 	}
 	else print( "# Autoloader: failed to load module! Visit forums to find solution!" );
 }
