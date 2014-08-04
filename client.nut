@@ -1,10 +1,10 @@
 /* ############################################################## */
-/* #			Admin Panel v1.2 by Stoku						# */
+/* #			Admin Panel v1.2 R2 by Stoku					# */
 /* #					Have fun!								# */
 /* ############################################################## */
 
 /* Author and versioning info */
-local SCRIPT_VERSION			= "1.2";
+local SCRIPT_VERSION			= "1.2 R2";
 local SCRIPT_AUTHOR				= "Stoku";
 local LANGUAGE_NAME				= "english";
 local LANGUAGE_AUTHOR			= "Stoku";

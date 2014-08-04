@@ -1,5 +1,5 @@
 /* ############################################################## */
-/* #			Admin Panel v1.2 by Stoku						# */
+/* #			Admin Panel v1.2 R2 by Stoku					# */
 /* #					Have fun!								# */
 /* ############################################################## */
 
@@ -11,9 +11,44 @@ function onScriptLoad()
 {
 	playerList <- {};
 	adminList <- {};
+			
+	RegisterRemoteFunc( "TimeAndWeather_LoadData" );
+	RegisterRemoteFunc( "TimeAndWeather_Accept" );
+	RegisterRemoteFunc( "TimeAndWeather_SetWeather" );
+	
+	RegisterRemoteFunc( "PlayerManager_LoadData" );
+	RegisterRemoteFunc( "PlayerManager_Kick" );
+	RegisterRemoteFunc( "PlayerManager_Kill" );
+	RegisterRemoteFunc( "PlayerManager_SetFreeze" );
+	RegisterRemoteFunc( "PlayerManager_Heal" );
+	RegisterRemoteFunc( "PlayerManager_Ban" );
+	RegisterRemoteFunc( "PlayerManager_Teleport" );
+	RegisterRemoteFunc( "PlayerManager_Bring" );
+	RegisterRemoteFunc( "PlayerManager_Message" );
+	RegisterRemoteFunc( "PlayerManager_SetHealth" );
+	RegisterRemoteFunc( "PlayerManager_SetArmor" );
+	RegisterRemoteFunc( "PlayerManager_SetSkin" );
+	RegisterRemoteFunc( "PlayerManager_BanIP" );
+	RegisterRemoteFunc( "PlayerManager_UnbanIP" );
+	
+	RegisterRemoteFunc( "GameSettings_LoadData" );
+	RegisterRemoteFunc( "GameSettings_Accept" );
+	RegisterRemoteFunc( "GameSettings_SetSpeed" );
+	RegisterRemoteFunc( "GameSettings_SetGravity" );
+	
+	RegisterRemoteFunc( "ServerSettings_LoadData" );
+	RegisterRemoteFunc( "ServerSettings_Accept" );
+	
+	RegisterRemoteFunc( "VehicleManager_LoadData" );
+	RegisterRemoteFunc( "VehicleManager_Accept" );
+	RegisterRemoteFunc( "VehicleManager_Fix" );
+	RegisterRemoteFunc( "VehicleManager_Explode" );
+	RegisterRemoteFunc( "VehicleManager_Respawn" );
+	RegisterRemoteFunc( "VehicleManager_Remove" );
+	RegisterRemoteFunc( "VehicleManager_SetColor" );
 	
 	print( "" );
-	print( "---------- Welcome to Admin Panel v1.2 --------" );
+	print( "---------- Welcome to Admin Panel v1.2 R2 --------" );
 	print( "" );
 	
 	Load();	// load settings/scripts
