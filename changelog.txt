@@ -1,5 +1,11 @@
+Version 1.2 R3 (08.08.2014):
+- [GUI] fix labels transparency in Liberty Unleashed 0.1.0.16+
+- [GUI] added GUI_LABEL_ALPHA for theming
+- [GUI] added ban type selection window (Liberty Unleashed 0.1.0.16+)
+- [CLIENT] small code cleanups
+
 Version 1.2 R2 (04.08.2014):
-- [SERVER/CLIENT] add support for Liberty Unleashed 0.1.0.15
+- [SERVER/CLIENT] added support for Liberty Unleashed 0.1.0.15+
 - [SERVER] use autoloader by default
 - [SERVER] Autoloader: added "off_" prefix detection in script name to ignore scripts
 - [SERVER] Autoloader: added scripts counter

@@ -1,5 +1,5 @@
 /* ############################################################## */
-/* #			Admin Panel v1.2 R2 by Stoku					# */
+/* #			Admin Panel v1.2 R3 by Stoku					# */
 /* #					Have fun!								# */
 /* ############################################################## */
 
@@ -48,7 +48,7 @@ function onScriptLoad()
 	RegisterRemoteFunc( "VehicleManager_SetColor" );
 	
 	print( "" );
-	print( "---------- Welcome to Admin Panel v1.2 R2 --------" );
+	print( "---------- Welcome to Admin Panel v1.2 R3 --------" );
 	print( "" );
 	
 	Load();	// load settings/scripts
@@ -596,12 +596,15 @@ function PlayerManager_Kick( pAdminPlayer, pPlayer )
 	AdminEcho( pPlayer.Name + " has been kicked from the server.", pAdminPlayer );
 }
 
-function PlayerManager_Ban( pAdminPlayer, pPlayer )
+function PlayerManager_Ban( pAdminPlayer, pPlayer, bantype1, bantype2, bantype3 )
 {
 	if ( !CheckAdmin( pAdminPlayer )) return 0;
 	if ( !pPlayer ) return 0;
 	
-	BanPlayer( pPlayer );
+	if ( bantype1 ) BanPlayer( pPlayer, BANTYPE_NAME );
+	if ( bantype2 ) BanPlayer( pPlayer, BANTYPE_IP );
+	if ( bantype3 ) BanPlayer( pPlayer, BANTYPE_LUID );
+	
 	AdminEcho( pPlayer.Name + " has been banned from the server.", pAdminPlayer );
 }
 

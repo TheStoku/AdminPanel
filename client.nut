@@ -1,10 +1,10 @@
 /* ############################################################## */
-/* #			Admin Panel v1.2 R2 by Stoku					# */
+/* #			Admin Panel v1.2 R3 by Stoku					# */
 /* #					Have fun!								# */
 /* ############################################################## */
 
 /* Author and versioning info */
-local SCRIPT_VERSION			= "1.2 R2";
+local SCRIPT_VERSION			= "1.2 R3";
 local SCRIPT_AUTHOR				= "Stoku";
 local LANGUAGE_NAME				= "english";
 local LANGUAGE_AUTHOR			= "Stoku";
@@ -29,6 +29,9 @@ local TIME_WEATHER_TIME			= 1;				// Set time
 local TIME_WEATHER_WEATHER		= 1;				// Set weather
 // Player Manager
 local PLAYER_MANAGER_BAN		= 1;				// Ban player
+local PLAYER_MANAGER_BANTYPE_1	= 1;				// Ban nickname
+local PLAYER_MANAGER_BANTYPE_2	= 1;				// Ban IP
+local PLAYER_MANAGER_BANTYPE_3	= 1;				// Ban LUID
 local PLAYER_MANAGER_KICK		= 1;				// Kick player
 local PLAYER_MANAGER_KILL		= 1;				// Kill player
 local PLAYER_MANAGER_FREEZE		= 1;				// Freeze/unfreeze
@@ -65,8 +68,6 @@ local GAME_SETTINGS_HANGLINGC	= 1;				// Toggle handling cheat
 local GAME_SETTINGS_FRIENDLYF	= 1;				// Toggle friendly fire
 local GAME_SETTINGS_SSVBRIDGE	= 1;				// Toggle SSV bridge lock
 /* End of level configuration*/
-
-local SERVER_KEY = "nullkey";
 
 
 /* Sound schemes */
@@ -165,6 +166,17 @@ gPlayerManagerEditbox1 <- null;
 gPlayerManagerCheckbox1 <- null;
 gPlayerManagerProgressbar1 <- null;
 gPlayerManagerProgressbar2 <- null;
+
+gBanSelectionWindow <- null;
+gBanSelectionLabel1 <- null;
+gBanSelectionLabel2 <- null;
+gBanSelectionLabel3 <- null;
+gBanSelectionLabel4 <- null;
+gBanSelectionCheckbox1 <- null;
+gBanSelectionCheckbox2 <- null;
+gBanSelectionCheckbox3 <- null;
+gBanSelectionButton1 <- null;
+gBanSelectionButton2 <- null;
 
 gColorPaletteWindow <- null;
 gColorPaletteButton1 <- null;
@@ -283,8 +295,9 @@ function onScriptLoad()
 		
 	/* GUI Color schemes */
 	/* Oldschool GTAIII Color Scheme (default) */
-	local GUI_WINDOW_ALPHA 			= 200;							// Window alpha channel
+	local GUI_WINDOW_ALPHA 			= 200;							// Windows alpha channel
 	local GUI_ELEMENT_ALPHA 		= 50;							// Elements alpha channel
+	local GUI_LABEL_ALPHA	 		= 200;							// Labels alpha channel
 	local GUI_TITLE_BAR 			= false;						// Enable/disable window titlebars
 	local GUI_TEXT_COLOR 			= Colour( 150, 150, 150 );		// Label/editbox text color
 	local GUI_WINDOW_COLOR 			= Colour( 43, 43, 55 );			// Window color
@@ -296,6 +309,7 @@ function onScriptLoad()
 	/* Modern GTAIII Color Scheme */
 	/*local GUI_WINDOW_ALPHA 			= 130;							// Window alpha channel
 	local GUI_ELEMENT_ALPHA 		= 20;							// Elements alpha channel
+	local GUI_LABEL_ALPHA	 		= 0;							// Labels alpha channel
 	local GUI_TITLE_BAR 			= false;						// Enable/disable window titlebars
 	local GUI_TEXT_COLOR 			= Colour( 200, 200, 200 );		// Label/editbox text color
 	local GUI_WINDOW_COLOR 			= Colour( 0, 0, 0 );			// Window color
@@ -354,6 +368,16 @@ function onScriptLoad()
 	local playermanagerEditbox1 = [ 5, playermanagerWindow[3] - 90, 390, 25 ];							// X pos, Y pos, X Size, Y Size
 	local playermanagerProgressbar1 = [ 215, 35, 180, 25 ];												// X pos, Y pos, X Size, Y Size
 	local playermanagerProgressbar2 = [ 215, 65, 180, 25 ];												// X pos, Y pos, X Size, Y Size
+	
+	local banselectionWindow = [ (ScreenWidth/2)-150, (ScreenHeight/2), 300, 70, "Select ban type" ];	// X pos, Y pos, X Size, Y Size, Text
+	local banselectionLabel1 = [ 20, 5, 100, 25, "Ban nickname" ];										// X pos, Y pos, X Size, Y Size, Text
+	local banselectionLabel2 = [ 20, 20, 100, 25, "Ban IP" ];										// X pos, Y pos, X Size, Y Size, Text
+	local banselectionLabel3 = [ 20, 35, 100, 25, "Ban LUID" ];										// X pos, Y pos, X Size, Y Size, Text
+	local banselectionCheckbox1 = [ 5, 8, 10, 10, true ];											// X pos, Y pos, X Size, Y Size, bChecked
+	local banselectionCheckbox2 = [ 5, 23, 10, 10, true ];											// X pos, Y pos, X Size, Y Size, bChecked
+	local banselectionCheckbox3 = [ 5, 38, 10, 10, true ];											// X pos, Y pos, X Size, Y Size, bChecked
+	local banselectionButton0 = [ (banselectionWindow[2]/2) + 5, banselectionWindow[3] - 10, (banselectionWindow[2]/2)-10, 25, "Cancel" ];							// X pos, Y pos, X Size, Y Size, Text
+	local banselectionButton1 = [ 5, banselectionWindow[3] - 10, (banselectionWindow[2]/2)-10, 25, "Add ban" ];							// X pos, Y pos, X Size, Y Size, Text
 
 	local vehiclemanagerWindow = [ 200, ScreenHeight - 310, 400, 300, "Vehicle Manager" ];				// X pos, Y pos, X Size, Y Size, Text
 	local vehiclemanagerButton0 = [ vehiclemanagerWindow[3]-100, vehiclemanagerWindow[3] - 60, (vehiclemanagerWindow[2]/2)-10, 25, "Cancel" ];	// X pos, Y pos, X Size, Y Size, Text
@@ -538,7 +562,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gTimeWeatherLabel1.Colour = GUI_WINDOW_COLOR;
 	gTimeWeatherLabel1.FontTags = TAG_BOLD;
 	gTimeWeatherLabel1.TextColour = GUI_TEXT_COLOR;
-	gTimeWeatherLabel1.Alpha = GUI_ELEMENT_ALPHA;
+	gTimeWeatherLabel1.Alpha = GUI_LABEL_ALPHA;
 	gTimeWeatherLabel1.Flags = FLAG_SHADOW;
 	gTimeWeatherLabel1.Visible = false;
 	
@@ -547,7 +571,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gTimeWeatherLabel2.Colour = GUI_WINDOW_COLOR;
 	gTimeWeatherLabel2.FontTags = TAG_BOLD;
 	gTimeWeatherLabel2.TextColour = GUI_TEXT_COLOR;
-	gTimeWeatherLabel2.Alpha = GUI_ELEMENT_ALPHA;
+	gTimeWeatherLabel2.Alpha = GUI_LABEL_ALPHA;
 	gTimeWeatherLabel2.Flags = FLAG_SHADOW;
 	gTimeWeatherLabel2.Visible = false;
 	
@@ -556,7 +580,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gTimeWeatherLabel3.Colour = GUI_WINDOW_COLOR;
 	gTimeWeatherLabel3.FontTags = TAG_BOLD;
 	gTimeWeatherLabel3.TextColour = GUI_TEXT_COLOR;
-	gTimeWeatherLabel3.Alpha = GUI_ELEMENT_ALPHA;
+	gTimeWeatherLabel3.Alpha = GUI_LABEL_ALPHA;
 	gTimeWeatherLabel3.Flags = FLAG_SHADOW;
 	gTimeWeatherLabel3.Visible = false;
 	
@@ -565,7 +589,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gTimeWeatherLabel4.Colour = GUI_WINDOW_COLOR;
 	gTimeWeatherLabel4.FontTags = TAG_BOLD;
 	gTimeWeatherLabel4.TextColour = GUI_TEXT_COLOR;
-	gTimeWeatherLabel4.Alpha = GUI_ELEMENT_ALPHA;
+	gTimeWeatherLabel4.Alpha = GUI_LABEL_ALPHA;
 	gTimeWeatherLabel4.Flags = FLAG_SHADOW;
 	gTimeWeatherLabel4.Visible = false;
 	
@@ -768,7 +792,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel1.Colour = GUI_WINDOW_COLOR;
 	gPlayerManagerLabel1.FontTags = TAG_BOLD;
 	gPlayerManagerLabel1.TextColour = GUI_BUTTON_TEXT_COLOR;
-	gPlayerManagerLabel1.Alpha = GUI_ELEMENT_ALPHA;
+	gPlayerManagerLabel1.Alpha = GUI_LABEL_ALPHA;
 	gPlayerManagerLabel1.Flags = FLAG_SHADOW;
 	gPlayerManagerLabel1.Visible = true;
 	
@@ -777,7 +801,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel2.Colour = GUI_WINDOW_COLOR;
 	gPlayerManagerLabel2.FontTags = TAG_BOLD;
 	gPlayerManagerLabel2.TextColour = GUI_TEXT_COLOR;
-	gPlayerManagerLabel2.Alpha = GUI_ELEMENT_ALPHA;
+	gPlayerManagerLabel2.Alpha = GUI_LABEL_ALPHA;
 	gPlayerManagerLabel2.Flags = FLAG_SHADOW;
 	gPlayerManagerLabel2.Visible = false;
 	
@@ -786,7 +810,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel3.Colour = GUI_WINDOW_COLOR;
 	gPlayerManagerLabel3.FontTags = TAG_BOLD;
 	gPlayerManagerLabel3.TextColour = GUI_TEXT_COLOR;
-	gPlayerManagerLabel3.Alpha = GUI_ELEMENT_ALPHA;
+	gPlayerManagerLabel3.Alpha = GUI_LABEL_ALPHA;
 	gPlayerManagerLabel3.Flags = FLAG_SHADOW;
 	gPlayerManagerLabel3.Visible = false;
 	
@@ -795,7 +819,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel4.Colour = GUI_WINDOW_COLOR;
 	gPlayerManagerLabel4.FontTags = TAG_BOLD;
 	gPlayerManagerLabel4.TextColour = GUI_TEXT_COLOR;
-	gPlayerManagerLabel4.Alpha = GUI_ELEMENT_ALPHA;
+	gPlayerManagerLabel4.Alpha = GUI_LABEL_ALPHA;
 	gPlayerManagerLabel4.Flags = FLAG_SHADOW;
 	gPlayerManagerLabel4.Visible = false;
 	
@@ -804,7 +828,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel5.Colour = GUI_WINDOW_COLOR;
 	gPlayerManagerLabel5.FontTags = TAG_BOLD;
 	gPlayerManagerLabel5.TextColour = GUI_TEXT_COLOR;
-	gPlayerManagerLabel5.Alpha = GUI_ELEMENT_ALPHA;
+	gPlayerManagerLabel5.Alpha = GUI_LABEL_ALPHA;
 	gPlayerManagerLabel5.Flags = FLAG_SHADOW;
 	gPlayerManagerLabel5.Visible = false;
 	
@@ -813,7 +837,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel6.Colour = GUI_WINDOW_COLOR;
 	gPlayerManagerLabel6.FontTags = TAG_BOLD;
 	gPlayerManagerLabel6.TextColour = GUI_TEXT_COLOR;
-	gPlayerManagerLabel6.Alpha = GUI_ELEMENT_ALPHA;
+	gPlayerManagerLabel6.Alpha = GUI_LABEL_ALPHA;
 	gPlayerManagerLabel6.Flags = FLAG_SHADOW;
 	gPlayerManagerLabel6.Visible = false;
 	
@@ -822,7 +846,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel7.Colour = GUI_WINDOW_COLOR;
 	gPlayerManagerLabel7.FontTags = TAG_BOLD;
 	gPlayerManagerLabel7.TextColour = GUI_TEXT_COLOR;
-	gPlayerManagerLabel7.Alpha = GUI_ELEMENT_ALPHA;
+	gPlayerManagerLabel7.Alpha = GUI_LABEL_ALPHA;
 	gPlayerManagerLabel7.Flags = FLAG_SHADOW;
 	gPlayerManagerLabel7.Visible = true;
 	
@@ -831,7 +855,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gPlayerManagerLabel8.Colour = GUI_WINDOW_COLOR;
 	gPlayerManagerLabel8.FontTags = TAG_BOLD;
 	gPlayerManagerLabel8.TextColour = GUI_TEXT_COLOR;
-	gPlayerManagerLabel8.Alpha = GUI_ELEMENT_ALPHA;
+	gPlayerManagerLabel8.Alpha = GUI_LABEL_ALPHA;
 	gPlayerManagerLabel8.Flags = FLAG_SHADOW;
 	gPlayerManagerLabel8.Visible = false;
 	
@@ -890,6 +914,87 @@ function onScriptLoad()
 	gPlayerManagerWindow.AddChild( gPlayerManagerEditbox1 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerProgressbar1 );
 	gPlayerManagerWindow.AddChild( gPlayerManagerProgressbar2 );
+	
+	
+	// ------------------------------- Ban Type Selection Window
+	gBanSelectionWindow = GUIWindow( VectorScreen( banselectionWindow[0], banselectionWindow[1] ), ScreenSize( banselectionWindow[2], banselectionWindow[3] ), banselectionWindow[4] );
+	if ( GUI_WINDOW_COLOR ) gBanSelectionWindow.Colour = GUI_WINDOW_COLOR;
+	gBanSelectionWindow.Titlebar = GUI_TITLE_BAR;
+	gBanSelectionWindow.Alpha = 255;
+	gBanSelectionWindow.Visible = false;
+	
+	/* Cancel button */
+	gBanSelectionButton1 = GUIButton( VectorScreen( banselectionButton0[0], banselectionButton0[1] ), ScreenSize( banselectionButton0[2], banselectionButton0[3] ), banselectionButton0[4] );
+	if ( GUI_BUTTON_COLOR ) gBanSelectionButton1.Colour = GUI_BUTTON_COLOR;
+	gBanSelectionButton1.FontTags = TAG_BOLD;
+	gBanSelectionButton1.SetCallbackFunc( Menu9_Handle0 );
+	gBanSelectionButton1.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gBanSelectionButton1.Alpha = GUI_ELEMENT_ALPHA;
+	gBanSelectionButton1.Flags = FLAG_SHADOW;
+	gBanSelectionButton1.Visible = true;
+	
+	/* Add ban button */
+	gBanSelectionButton2 = GUIButton( VectorScreen( banselectionButton1[0], banselectionButton1[1] ), ScreenSize( banselectionButton1[2], banselectionButton1[3] ), banselectionButton1[4] );
+	if ( GUI_BUTTON_COLOR ) gBanSelectionButton2.Colour = GUI_BUTTON_COLOR;
+	gBanSelectionButton2.FontTags = TAG_BOLD;
+	gBanSelectionButton2.SetCallbackFunc( Menu9_Handle1 );
+	gBanSelectionButton2.TextColour = GUI_BUTTON_TEXT_COLOR;
+	gBanSelectionButton2.Alpha = GUI_ELEMENT_ALPHA;
+	gBanSelectionButton2.Flags = FLAG_SHADOW;
+	gBanSelectionButton2.Visible = false;
+	
+	/* Ban Name label */
+	gBanSelectionLabel1 = GUILabel( VectorScreen( banselectionLabel1[0], banselectionLabel1[1] ), ScreenSize( banselectionLabel1[2], banselectionLabel1[3] ), banselectionLabel1[4] );
+	if ( GUI_WINDOW_COLOR ) gBanSelectionLabel1.Colour = GUI_WINDOW_COLOR;
+	gBanSelectionLabel1.FontTags = TAG_BOLD;
+	gBanSelectionLabel1.TextColour = GUI_TEXT_COLOR;
+	gBanSelectionLabel1.Alpha = GUI_LABEL_ALPHA;
+	gBanSelectionLabel1.Flags = FLAG_SHADOW;
+	gBanSelectionLabel1.Visible = false;
+	
+	/* Ban IP label */
+	gBanSelectionLabel2 = GUILabel( VectorScreen( banselectionLabel2[0], banselectionLabel2[1] ), ScreenSize( banselectionLabel2[2], banselectionLabel2[3] ), banselectionLabel2[4] );
+	if ( GUI_WINDOW_COLOR ) gBanSelectionLabel2.Colour = GUI_WINDOW_COLOR;
+	gBanSelectionLabel2.FontTags = TAG_BOLD;
+	gBanSelectionLabel2.TextColour = GUI_TEXT_COLOR;
+	gBanSelectionLabel2.Alpha = GUI_LABEL_ALPHA;
+	gBanSelectionLabel2.Flags = FLAG_SHADOW;
+	gBanSelectionLabel2.Visible = false;
+	
+	/* Ban LUID label */
+	gBanSelectionLabel3 = GUILabel( VectorScreen( banselectionLabel3[0], banselectionLabel3[1] ), ScreenSize( banselectionLabel3[2], banselectionLabel3[3] ), banselectionLabel3[4] );
+	if ( GUI_WINDOW_COLOR ) gBanSelectionLabel3.Colour = GUI_WINDOW_COLOR;
+	gBanSelectionLabel3.FontTags = TAG_BOLD;
+	gBanSelectionLabel3.TextColour = GUI_TEXT_COLOR;
+	gBanSelectionLabel3.Alpha = GUI_LABEL_ALPHA;
+	gBanSelectionLabel3.Flags = FLAG_SHADOW;
+	gBanSelectionLabel3.Visible = false;
+	
+	/* Ban name checkbox */
+	gBanSelectionCheckbox1 = GUICheckbox( VectorScreen( banselectionCheckbox1[0], banselectionCheckbox1[1] ), ScreenSize( banselectionCheckbox1[2], banselectionCheckbox1[3] ), banselectionCheckbox1[4] );
+	gBanSelectionCheckbox1.Alpha = 200;
+	gBanSelectionCheckbox1.Visible = false;
+	
+	/* Ban ip checkbox */
+	gBanSelectionCheckbox2 = GUICheckbox( VectorScreen( banselectionCheckbox2[0], banselectionCheckbox2[1] ), ScreenSize( banselectionCheckbox2[2], banselectionCheckbox2[3] ), banselectionCheckbox2[4] );
+	gBanSelectionCheckbox2.Alpha = 200;
+	gBanSelectionCheckbox2.Visible = false;
+	
+	/* Ban luid checkbox */
+	gBanSelectionCheckbox3 = GUICheckbox( VectorScreen( banselectionCheckbox3[0], banselectionCheckbox3[1] ), ScreenSize( banselectionCheckbox3[2], banselectionCheckbox3[3] ), banselectionCheckbox3[4] );
+	gBanSelectionCheckbox3.Alpha = 200;
+	gBanSelectionCheckbox3.Visible = false;
+	
+	AddGUILayer( gBanSelectionWindow );
+	gBanSelectionWindow.AddChild( gBanSelectionButton1 );
+	gBanSelectionWindow.AddChild( gBanSelectionButton2 );
+	gBanSelectionWindow.AddChild( gBanSelectionLabel1 );
+	gBanSelectionWindow.AddChild( gBanSelectionLabel2 );
+	gBanSelectionWindow.AddChild( gBanSelectionLabel3 );
+	gBanSelectionWindow.AddChild( gBanSelectionCheckbox1 );
+	gBanSelectionWindow.AddChild( gBanSelectionCheckbox2 );
+	gBanSelectionWindow.AddChild( gBanSelectionCheckbox3 );
+	
 	
 	
 	// ------------------------------- Vehicle Manager Window
@@ -1014,7 +1119,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gVehicleManagerLabel1.Colour = GUI_WINDOW_COLOR;
 	gVehicleManagerLabel1.FontTags = TAG_BOLD;
 	gVehicleManagerLabel1.TextColour = GUI_BUTTON_TEXT_COLOR;
-	gVehicleManagerLabel1.Alpha = GUI_ELEMENT_ALPHA;
+	gVehicleManagerLabel1.Alpha = GUI_LABEL_ALPHA;
 	gVehicleManagerLabel1.Flags = FLAG_SHADOW;
 	gVehicleManagerLabel1.Visible = true;
 	
@@ -1023,7 +1128,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gVehicleManagerLabel2.Colour = GUI_WINDOW_COLOR;
 	gVehicleManagerLabel2.FontTags = TAG_BOLD;
 	gVehicleManagerLabel2.TextColour = GUI_TEXT_COLOR;
-	gVehicleManagerLabel2.Alpha = GUI_ELEMENT_ALPHA;
+	gVehicleManagerLabel2.Alpha = GUI_LABEL_ALPHA;
 	gVehicleManagerLabel2.Flags = FLAG_SHADOW;
 	gVehicleManagerLabel2.Visible = true;
 	
@@ -1032,7 +1137,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gVehicleManagerLabel3.Colour = GUI_WINDOW_COLOR;
 	gVehicleManagerLabel3.FontTags = TAG_BOLD;
 	gVehicleManagerLabel3.TextColour = GUI_TEXT_COLOR;
-	gVehicleManagerLabel3.Alpha = GUI_ELEMENT_ALPHA;
+	gVehicleManagerLabel3.Alpha = GUI_LABEL_ALPHA;
 	gVehicleManagerLabel3.Flags = FLAG_SHADOW;
 	gVehicleManagerLabel3.Visible = true;
 	
@@ -1041,7 +1146,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gVehicleManagerLabel4.Colour = GUI_WINDOW_COLOR;
 	gVehicleManagerLabel4.FontTags = TAG_BOLD;
 	gVehicleManagerLabel4.TextColour = GUI_TEXT_COLOR;
-	gVehicleManagerLabel4.Alpha = GUI_ELEMENT_ALPHA;
+	gVehicleManagerLabel4.Alpha = GUI_LABEL_ALPHA;
 	gVehicleManagerLabel4.Flags = FLAG_SHADOW;
 	gVehicleManagerLabel4.Visible = true;
 	
@@ -1050,7 +1155,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gVehicleManagerLabel5.Colour = GUI_WINDOW_COLOR;
 	gVehicleManagerLabel5.FontTags = TAG_BOLD;
 	gVehicleManagerLabel5.TextColour = GUI_TEXT_COLOR;
-	gVehicleManagerLabel5.Alpha = GUI_ELEMENT_ALPHA;
+	gVehicleManagerLabel5.Alpha = GUI_LABEL_ALPHA;
 	gVehicleManagerLabel5.Flags = FLAG_SHADOW;
 	gVehicleManagerLabel5.Visible = true;
 	
@@ -1114,7 +1219,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel1.Colour = GUI_WINDOW_COLOR;
 	gServerSettingsLabel1.FontTags = TAG_BOLD;
 	gServerSettingsLabel1.TextColour = GUI_TEXT_COLOR;
-	gServerSettingsLabel1.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel1.Alpha = GUI_LABEL_ALPHA;
 	gServerSettingsLabel1.Flags = FLAG_SHADOW;
 	gServerSettingsLabel1.Visible = false;
 	
@@ -1123,7 +1228,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel2.Colour = GUI_WINDOW_COLOR;
 	gServerSettingsLabel2.FontTags = TAG_BOLD;
 	gServerSettingsLabel2.TextColour = GUI_TEXT_COLOR;
-	gServerSettingsLabel2.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel2.Alpha = GUI_LABEL_ALPHA;
 	gServerSettingsLabel2.Flags = FLAG_SHADOW;
 	gServerSettingsLabel2.Visible = false;
 	
@@ -1132,7 +1237,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel3.Colour = GUI_WINDOW_COLOR;
 	gServerSettingsLabel3.FontTags = TAG_BOLD;
 	gServerSettingsLabel3.TextColour = GUI_TEXT_COLOR;
-	gServerSettingsLabel3.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel3.Alpha = GUI_LABEL_ALPHA;
 	gServerSettingsLabel3.Flags = FLAG_SHADOW;
 	gServerSettingsLabel3.Visible = false;
 	
@@ -1141,7 +1246,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel4.Colour = GUI_WINDOW_COLOR;
 	gServerSettingsLabel4.FontTags = TAG_BOLD;
 	gServerSettingsLabel4.TextColour = GUI_TEXT_COLOR;
-	gServerSettingsLabel4.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel4.Alpha = GUI_LABEL_ALPHA;
 	gServerSettingsLabel4.Flags = FLAG_SHADOW;
 	gServerSettingsLabel4.Visible = false;
 	
@@ -1150,7 +1255,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel5.Colour = GUI_WINDOW_COLOR;
 	gServerSettingsLabel5.FontTags = TAG_BOLD;
 	gServerSettingsLabel5.TextColour = GUI_TEXT_COLOR;
-	gServerSettingsLabel5.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel5.Alpha = GUI_LABEL_ALPHA;
 	gServerSettingsLabel5.Flags = FLAG_SHADOW;
 	gServerSettingsLabel5.Visible = false;
 	
@@ -1159,7 +1264,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gServerSettingsLabel6.Colour = GUI_WINDOW_COLOR;
 	gServerSettingsLabel6.FontTags = TAG_BOLD;
 	gServerSettingsLabel6.TextColour = GUI_TEXT_COLOR;
-	gServerSettingsLabel6.Alpha = GUI_ELEMENT_ALPHA;
+	gServerSettingsLabel6.Alpha = GUI_LABEL_ALPHA;
 	gServerSettingsLabel6.Flags = FLAG_SHADOW;
 	gServerSettingsLabel6.Visible = false;
 	
@@ -1257,7 +1362,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gGameSettingsLabel1.Colour = GUI_WINDOW_COLOR;
 	gGameSettingsLabel1.FontTags = TAG_BOLD;
 	gGameSettingsLabel1.TextColour = GUI_TEXT_COLOR;
-	gGameSettingsLabel1.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsLabel1.Alpha = GUI_LABEL_ALPHA;
 	gGameSettingsLabel1.Flags = FLAG_SHADOW;
 	gGameSettingsLabel1.Visible = false;
 	
@@ -1266,7 +1371,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gGameSettingsLabel2.Colour = GUI_WINDOW_COLOR;
 	gGameSettingsLabel2.FontTags = TAG_BOLD;
 	gGameSettingsLabel2.TextColour = GUI_TEXT_COLOR;
-	gGameSettingsLabel2.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsLabel2.Alpha = GUI_LABEL_ALPHA;
 	gGameSettingsLabel2.Flags = FLAG_SHADOW;
 	gGameSettingsLabel2.Visible = false;
 	
@@ -1275,7 +1380,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gGameSettingsLabel3.Colour = GUI_WINDOW_COLOR;
 	gGameSettingsLabel3.FontTags = TAG_BOLD;
 	gGameSettingsLabel3.TextColour = GUI_TEXT_COLOR;
-	gGameSettingsLabel3.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsLabel3.Alpha = GUI_LABEL_ALPHA;
 	gGameSettingsLabel3.Flags = FLAG_SHADOW;
 	gGameSettingsLabel3.Visible = false;
 	
@@ -1284,7 +1389,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gGameSettingsLabel4.Colour = GUI_WINDOW_COLOR;
 	gGameSettingsLabel4.FontTags = TAG_BOLD;
 	gGameSettingsLabel4.TextColour = GUI_TEXT_COLOR;
-	gGameSettingsLabel4.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsLabel4.Alpha = GUI_LABEL_ALPHA;
 	gGameSettingsLabel4.Flags = FLAG_SHADOW;
 	gGameSettingsLabel4.Visible = false;
 	
@@ -1293,7 +1398,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gGameSettingsLabel5.Colour = GUI_WINDOW_COLOR;
 	gGameSettingsLabel5.FontTags = TAG_BOLD;
 	gGameSettingsLabel5.TextColour = GUI_TEXT_COLOR;
-	gGameSettingsLabel5.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsLabel5.Alpha = GUI_LABEL_ALPHA;
 	gGameSettingsLabel5.Flags = FLAG_SHADOW;
 	gGameSettingsLabel5.Visible = false;
 	
@@ -1302,7 +1407,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gGameSettingsLabel6.Colour = GUI_WINDOW_COLOR;
 	gGameSettingsLabel6.FontTags = TAG_BOLD;
 	gGameSettingsLabel6.TextColour = GUI_TEXT_COLOR;
-	gGameSettingsLabel6.Alpha = GUI_ELEMENT_ALPHA;
+	gGameSettingsLabel6.Alpha = GUI_LABEL_ALPHA;
 	gGameSettingsLabel6.Flags = FLAG_SHADOW;
 	gGameSettingsLabel6.Visible = false;
 	
@@ -1455,7 +1560,7 @@ function onScriptLoad()
 	if ( GUI_WINDOW_COLOR ) gMessageLabel1.Colour = GUI_WINDOW_COLOR;
 	gMessageLabel1.FontTags = TAG_BOLD;
 	gMessageLabel1.TextColour = GUI_TEXT_COLOR;
-	gMessageLabel1.Alpha = GUI_ELEMENT_ALPHA;
+	gMessageLabel1.Alpha = GUI_LABEL_ALPHA;
 	gMessageLabel1.Flags = FLAG_SHADOW;
 	gMessageLabel1.Visible = true;
 	
@@ -2048,9 +2153,7 @@ function ServerSettings_Update( szServerName, szMapName, szGamemodeName, iMaxPla
 bLocalPlayerFrozen <- false;
 
 function ShowAdminPanel()
-{
-	//if ( !CallServerFunc( "adminpanel/keygen.nut", "gencheck", pLocalPlayer, SERVER_KEY ) ) return 0;
-	
+{	
 	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_MENU );
 	
 	//ShowTimeAndWheaterSettings()						// Set your default tab here
@@ -2095,6 +2198,7 @@ function HideAdminPanel()
 	gGameSettingsWindow.Visible = false;
 	gServerSettingsWindow.Visible = false;
 	gVehicleManagerWindow.Visible = false;
+	gBanSelectionWindow.Visible = false;
 	
 	ShowMouseCursor( false );
 	SetHUDItemEnabled( HUD_RADAR, true );
@@ -2155,6 +2259,7 @@ function ShowTimeAndWheaterSettings()
 		gGameSettingsWindow.Visible = false;
 		gServerSettingsWindow.Visible = false;
 		gVehicleManagerWindow.Visible = false;
+		gBanSelectionWindow.Visible = false;
 		gTimeWeatherWindow.Visible = true;
 		
 		if ( bSpawnState ) SetCameraMatrix( Vector( -739.0, 480.0, 132.0 ), Vector( -653.0, -575.0, 29.0 ) );
@@ -2282,6 +2387,7 @@ function ShowPlayerManager()
 		gGameSettingsWindow.Visible = false;
 		gServerSettingsWindow.Visible = false;
 		gVehicleManagerWindow.Visible = false;
+		gBanSelectionWindow.Visible = false;
 		gPlayerManagerWindow.Visible = true;
 	}
 }
@@ -2322,6 +2428,7 @@ function ShowVehicleManager()
 		gGameSettingsWindow.Visible = false;
 		gServerSettingsWindow.Visible = false;
 		gPlayerManagerWindow.Visible = false;
+		gBanSelectionWindow.Visible = false;
 		gVehicleManagerWindow.Visible = true;
 		
 		local pVehicle = FindVehicle( iVehicleID );
@@ -2409,6 +2516,7 @@ function ShowGameSettings()
 		gPlayerManagerWindow.Visible = false;
 		gVehicleManagerWindow.Visible = false;
 		gServerSettingsWindow.Visible = false;
+		gBanSelectionWindow.Visible = false;
 		gGameSettingsWindow.Visible = true;
 	}
 }
@@ -2465,13 +2573,55 @@ function ShowServerSettings()
 			gServerSettingsEditbox6.Visible = true;
 			gServerSettingsButton1.Visible = true;
 		}
-	
 		
 		gTimeWeatherWindow.Visible = false;
 		gPlayerManagerWindow.Visible = false;
 		gGameSettingsWindow.Visible = false;
 		gVehicleManagerWindow.Visible = false;
+		gBanSelectionWindow.Visible = false;
 		gServerSettingsWindow.Visible = true;
+	}
+}
+
+function ShowBanTypeSelection()
+{
+	if ( gBanSelectionWindow.Visible )
+	{
+		if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_EXIT );
+		gBanSelectionWindow.Visible = false;
+		gTitleWindow.Visible = true;
+		gPlayerManagerWindow.Visible = true;
+	}
+	else
+	{
+		if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_MENU );
+
+		if ( iAdminLevel >= PLAYER_MANAGER_BANTYPE_1 )	// Name
+		{
+			gBanSelectionLabel1.Visible = true;
+			gBanSelectionCheckbox1.Visible = true;
+			gBanSelectionButton2.Visible = true;
+		}
+		if ( iAdminLevel >= PLAYER_MANAGER_BANTYPE_2 )	// IP
+		{
+			gBanSelectionLabel2.Visible = true;
+			gBanSelectionCheckbox2.Visible = true;
+			gBanSelectionButton2.Visible = true;
+		}
+		if ( iAdminLevel >= PLAYER_MANAGER_BANTYPE_3 )	// LUID
+		{
+			gBanSelectionLabel3.Visible = true;
+			gBanSelectionCheckbox3.Visible = true;
+			gBanSelectionButton2.Visible = true;
+		}
+		
+		gTitleWindow.Visible = false;
+		gTimeWeatherWindow.Visible = false;
+		gPlayerManagerWindow.Visible = false;
+		gGameSettingsWindow.Visible = false;
+		gVehicleManagerWindow.Visible = false;
+		gServerSettingsWindow.Visible = false;
+		gBanSelectionWindow.Visible = true;
 	}
 }
 
@@ -2644,12 +2794,10 @@ function Menu3_Handle7()		// Heal/ALL
 }
 function Menu3_Handle8()		// Ban
 {	
-	if ( !gPlayerManagerButton8.Visible ) return 1;
-	
-	if ( SOUND_ENABLED ) PlayFrontEndSound( SOUND_CLICK );
+	if ( !gPlayerManagerButton8.Visible ) return;
 	
 	local pPlayer = FindPlayer( iPlayerID );
-	if ( pPlayer ) CallServerFunc( "adminpanel/server.nut", "PlayerManager_Ban", pLocalPlayer, pPlayer );
+	if ( pPlayer ) ShowBanTypeSelection();
 }
 function Menu3_Handle9()		// Go to/ALL
 {	
@@ -3093,6 +3241,27 @@ function Menu8_Handle25()		// Color 25
 	
 	local pVehicle = FindVehicle( iVehicleID );
 	if ( pVehicle )	CallServerFunc( "adminpanel/server.nut", "VehicleManager_SetColor", pLocalPlayer, pVehicle, iColorID, paletteColor25.r, paletteColor25.g, paletteColor25.b );
+}
+
+// ---------------------------------------- Menu9 Handler
+// ---------------------------------------- Ban type selection
+function Menu9_Handle0()		// Cancel
+{
+	ShowBanTypeSelection();
+}
+
+function Menu9_Handle1()		// Add ban
+{
+	if (( !gBanSelectionCheckbox1.Checked ) && ( !gBanSelectionCheckbox2.Checked ) && ( !gBanSelectionCheckbox3.Checked ))
+	{
+		Message( "Error: please select at least one type of ban.", Colour( 255, 0, 0 ) );
+		return;
+	}
+
+	local pPlayer = FindPlayer( iPlayerID );
+	if ( pPlayer ) CallServerFunc( "adminpanel/server.nut", "PlayerManager_Ban", pLocalPlayer, pPlayer, gBanSelectionCheckbox1.Checked, gBanSelectionCheckbox2.Checked, gBanSelectionCheckbox3.Checked );
+	
+	ShowBanTypeSelection();
 }
 
 
