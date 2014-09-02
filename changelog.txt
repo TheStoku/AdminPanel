@@ -1,3 +1,8 @@
+Version 1.3 (02.09.2014):
+- [SERVER] added admin login command (/aplogin by default)
+- [SERVER] added autologin via LUID
+- [SERVER] new variables in server.nut: (str)LOGIN_COMMAND, (str)ADMIN_PASSWORD, (int)ADMIN_LEVEL, (int)ADMIN_LOGIN_ATTEMPTS, (bool)LUID_AUTOLOGIN
+
 Version 1.2 R3 (08.08.2014):
 - [GUI] fix labels transparency in Liberty Unleashed 0.1.0.16+
 - [GUI] added GUI_LABEL_ALPHA for theming

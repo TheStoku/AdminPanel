@@ -1,6 +1,6 @@
 #####################################################
 #####################################################
-### Admin Panel v1.2 R3 by Stoku
+### Admin Panel v1.3 by Stoku
 ### www.lck.vc-mp.pl
 #####################################################
 #####################################################
@@ -19,14 +19,29 @@
   You can change some basic settings easly in the 'server.nut' source.
 
   a) ADMIN_ECHO - Admin action echo.
-	default: 4
+	default: 2
 	params: 0 - off
 		1 - prints only action
 		2 - prints action and admin nickname
 		3 - prints only important actions
 		4 - prints important actions + admin nickname
+
   b) CONSOLE_PREFIX - prefix used in messages, eg. in admin action message. You can leave it empty or change it to anything.
 	default: "[AP]"
+
+  c) LOGIN_COMMAND - Admin login command (string). Leaving empty disables this way of login.
+	default: "aplogin"
+
+  d) ADMIN_PASSWORD - Admin login password (string). Leaving empty disables this way of login.
+	default: "pass"
+
+  e) ADMIN_LEVEL - Default admin level for password login (integer).
+	default: 1
+
+  f) ADMIN_LOGIN_ATTEMPTS - Max login attempts before ban.
+	default: 3
+
+  g) LUID_AUTOLOGIN - Enable/disable autologin with LUID (boolean). LUID's are stored automatically in "admins.ini".
 
 
 4. Settings (Client side)

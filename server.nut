@@ -1,15 +1,22 @@
 /* ############################################################## */
-/* #			Admin Panel v1.2 R3 by Stoku					# */
+/* #			Admin Panel v1.3 by Stoku						# */
 /* #					Have fun!								# */
 /* ############################################################## */
 
-local ADMIN_ECHO 			= 2; // admin action echo: 0=off / 1=action / 2=action+admin nickname / 3=important actions only / 4=important action+admin nickname
-local CONSOLE_PREFIX		= "[AP]";
+local ADMIN_ECHO 			= 2;		// admin action echo: 0=off / 1=action / 2=action+admin nickname / 3=important actions only / 4=important action+admin nickname
+local CONSOLE_PREFIX		= "[AP]";	// prefix used in console messages
 
+local LOGIN_COMMAND			= "aplogin"	// login command, leave it empty to disable this type of logging in
+local ADMIN_PASSWORD		= "pass";	// admin password, empty also disables logging in with command.
+local ADMIN_LEVEL			= 1;		// level to grant after /aplogin
+local ADMIN_LOGIN_ATTEMPTS	= 3;		// login attempts before ban
+
+local LUID_AUTOLOGIN		= true;		// enable/disable LUID autologin
 
 function onScriptLoad()
 {
 	playerList <- {};
+	loginAttempts <- {};
 	adminList <- {};
 			
 	RegisterRemoteFunc( "TimeAndWeather_LoadData" );
@@ -48,7 +55,7 @@ function onScriptLoad()
 	RegisterRemoteFunc( "VehicleManager_SetColor" );
 	
 	print( "" );
-	print( "---------- Welcome to Admin Panel v1.2 R3 --------" );
+	print( "---------- Welcome to Admin Panel v1.3 -----------" );
 	print( "" );
 	
 	Load();	// load settings/scripts
@@ -64,6 +71,13 @@ function onScriptLoad()
 function onPlayerJoin( pPlayer )
 {
 	playerList.rawset( pPlayer.Name, pPlayer.ID );
+	
+	if ( LUID_AUTOLOGIN )
+	{
+		local iLevel = ReadIniInteger( "Scripts/adminpanel/admins.ini", pPlayer.LUID, "Level" );
+	
+		if ( iLevel > 0 ) SetAdminLevel( pPlayer, iLevel );
+	}
 	
 	//SetAdminLevel( pPlayer, 1 );	// uncomment this for tests, it grants panel access for everyone
 	
@@ -85,6 +99,37 @@ function onPlayerSpawn( pPlayer, pSpawnClass )
 function onPlayerDeath( pPlayer, iReason )
 {
 	CallClientFunc( pPlayer, "adminpanel/client.nut", "SetSpawnState", false );
+}
+
+function onPlayerCommand( pPlayer, szCommand, szText )
+{
+	if (( LOGIN_COMMAND.len() > 0 ) && ( ADMIN_PASSWORD.len() > 0 ))
+	{
+		if ( szCommand == LOGIN_COMMAND )
+		{
+			if ( szText == ADMIN_PASSWORD )
+			{
+				MessagePlayer( CONSOLE_PREFIX + " Password accepted!", pPlayer, Colour( 0, 255, 0 ) );
+				SetAdminLevel( pPlayer, ADMIN_LEVEL );
+			}
+			else
+			{
+				if ( !loginAttempts.rawin( pPlayer.Name ) ) loginAttempts.rawset( pPlayer.Name, 0 );
+				local iAttempts = loginAttempts.rawget( pPlayer.Name );
+
+				iAttempts++;
+				loginAttempts.rawset( pPlayer.Name, iAttempts );
+
+				MessagePlayer( CONSOLE_PREFIX + " Login failed (Attempts " + loginAttempts.rawget( pPlayer.Name ).tostring() + "/" + ADMIN_LOGIN_ATTEMPTS + ").", pPlayer, Colour( 255, 0, 0 ) );
+				
+				if ( iAttempts == ADMIN_LOGIN_ATTEMPTS )
+				{
+					BanLUID ( pPlayer.LUID );
+					BanIP ( pPlayer.IP );
+				}
+			}
+		}
+	}
 }
 
 function onConsoleInput( szCommand, szText )
@@ -262,6 +307,11 @@ function SetAdminLevel( pAdminPlayer, iLevel )
 		AdminEcho( "Giving admin access...", pAdminPlayer );
 		CallClientFunc( pAdminPlayer, "adminpanel/client.nut", "SetAdminLevel", iLevel, GetMaxPlayers() );
 	}
+
+	// Store admins LUID, IP, etc
+	WriteIniString( "Scripts/adminpanel/admins.ini", pAdminPlayer.LUID, "Name", pAdminPlayer.Name );
+	WriteIniString( "Scripts/adminpanel/admins.ini", pAdminPlayer.LUID, "IP", pAdminPlayer.IP );
+	WriteIniInteger( "Scripts/adminpanel/admins.ini", pAdminPlayer.LUID, "Level", iLevel );
 }
 
 function CLIENT_SetAdminLevel( pAdminPlayer, pPlayer, iLevel )
